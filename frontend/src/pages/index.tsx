@@ -1,5 +1,5 @@
 import HeaderNav from "@/components/HeaderNav";
-import VaultCard from "@/components/HeaderNav/VaultCard";
+import VaultCard from "@/components/VaultCard";
 import { Button, Flex, Stack } from "@chakra-ui/react";
 
 export default function Home() {
@@ -7,7 +7,7 @@ export default function Home() {
     <>
       <HeaderNav />
       <main>
-        <Flex gap={5} wrap={"wrap"} py={8} px={5} align={"center"}>
+        <Flex gap={5} wrap={"wrap"} py={8} px={4} justify={"center"}>
           <VaultCard />
           <VaultCard />
         </Flex>
