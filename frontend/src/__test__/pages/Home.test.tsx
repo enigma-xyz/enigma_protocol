@@ -18,9 +18,23 @@ describe("Home", () => {
     render(<Home />);
 
     const heading = screen.getByRole("heading", {
-      name: /welcome to next\.js!/i,
+      name: /Instantly deploy your Next\.js!/i,
     });
 
     expect(heading).toBeInTheDocument();
+  });
+  it("renders a paragraph", () => {
+    useRouter.mockImplementation(() => ({
+      route: "/",
+      pathname: "/",
+      query: {},
+      asPath: "/",
+    }));
+
+    render(<Home />);
+
+    const p = screen.getByRole("paragraph");
+
+    expect(p).toBeInTheDocument();
   });
 });
