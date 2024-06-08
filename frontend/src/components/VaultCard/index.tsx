@@ -58,6 +58,12 @@ export default function VaultCard() {
           </HStack>
         </HStack>
         <HStack
+          sx={{
+            ".link-box:hover &": {
+              translateY: "-30px",
+            },
+          }}
+          transition={"0.3s ease-out"}
           h={"80px"}
           justify={"space-around"}
           my={3}

@@ -6,7 +6,7 @@ export default function HeaderNav() {
     <HStack
       borderBottom={"1px"}
       borderBottomColor={"gray.600"}
-      py={{ lg: 3, base: 2 }}
+      py={{ lg: 4, base: 3 }}
       minH={10}
       justify={"space-between"}
       px={{ lg: 4, base: 3 }}
@@ -16,7 +16,11 @@ export default function HeaderNav() {
       </Heading>
       <nav></nav>
 
-      <Button fontWeight={600} size={"lg"} variant={"outline"}>
+      <Button
+        fontWeight={600}
+        size={{ md: "lg", base: "md" }}
+        variant={"outline"}
+      >
         Connect Wallet
       </Button>
     </HStack>
