@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "enigma-protocol-strats"
+version = "0.1.0"
+description = ""
+authors = ["degencodebeast <degencodebeast@protonmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
