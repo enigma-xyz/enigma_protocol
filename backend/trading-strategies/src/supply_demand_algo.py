@@ -11,9 +11,12 @@ import schedule
 import requests
 
 from anchorpy import Wallet
-from solders.keypair import Keypair
-from solders.pubkey import Pubkey
+from solders.keypair import Keypair # type: ignore
+from solders.pubkey import Pubkey # type: ignore
 from solana.rpc.async_api import AsyncClient
+from driftpy.math.amm import calculate_bid_ask_price
+from driftpy.math.market import (calculate_bid_price, calculate_ask_price)
+#from driftpy.keypair import load_keypair
 
 from driftpy.account_subscription_config import AccountSubscriptionConfig
 from driftpy.constants.config import configs
@@ -27,7 +30,19 @@ from driftpy.types import (
 )
 from driftpy.drift_client import DriftClient
 from driftpy.constants.numeric_constants import BASE_PRECISION, PRICE_PRECISION
+from driftpy.math.spot_position import (
+    get_worst_case_token_amounts,
+    is_spot_position_available,
+)
+from driftpy.math.perp_position import (
+    calculate_position_pnl,
+    calculate_entry_price,
+    calculate_base_asset_value,
+    is_available
+)
 
+
+#to-do add leverage later
 symbol = 'SOL'
 timeframe = '1h'  # for sdz zone
 limit = 300  # for sdz
@@ -55,12 +70,12 @@ def get_ohlcv(binance_symbol, timeframe='1h', limit=100):
 
 def supply_demand_zones(symbol, timeframe, limit):
     '''
-    We can now pass in a timeframe and limit to change sdz easily
+    We can now pass in a timeframe and limit to change supply/demand zone easily
 
-    out puts a df with supply and demand zones for each time frame
-    # this is supply zone n demand zone ranges
+    outputs a data frame with supply and demand zones for each time frame
+    # this is supply zone and demand zone ranges
     # row 0 is the CLOSE, row 1 is the WICK (high/low)
-    # and the supply/demand zone is inbetween the two
+    # and the supply/demand zone is in between the two
     '''
 
     print('starting supply and demand zone calculations..')
@@ -83,44 +98,52 @@ def supply_demand_zones(symbol, timeframe, limit):
     sd_df['1h_dz'] = [supp_lo_1h, supp_1h]
     sd_df['1h_sz'] = [res_hi_1h, resis_1h]
 
-    return sd_df
+    return sd_df # this is a df where the zone is indicated per timeframe
+                # and range is between row 0 and 1
 
 async def limit_order(drift_client, symbol, order_params):
     order_ix = None
     if order_params.direction == PositionDirection.Long():
-        order_ix = drift_client.get_place_perp_order_ix(order_params, 10)
+        #order_ix = drift_client.place_perp_order_ix(order_params)
+        order_tx_sig = await drift_client.place_perp_order_ix(order_params)
     elif order_params.direction == PositionDirection.Short():
-        order_ix = drift_client.get_place_perp_order_ix(order_params, 10)
+        #order_ix = drift_client.place_perp_order_ix(order_params)
+        order_tx_sig = await drift_client.place_perp_order_ix(order_params)
 
-    order_result = await drift_client.send_ix(order_ix)
+    #order_result = await drift_client.send_ixs(order_ix)
 
     if order_params.direction == PositionDirection.Long():
-        print(f"limit BUY order placed, resting: {order_result}")
+        print(f"limit BUY order placed, order tx: {order_tx_sig}")
     else:
-        print(f"limit SELL order placed, resting: {order_result}")
+        print(f"limit SELL order placed, order tx: {order_tx_sig}")
 
-    return order_result
+    return order_tx_sig
 
-async def get_position(drift_client, symbol):
-    user_state = await drift_client.get_user_state()
+async def get_position(drift_client, _market_index):
+    #user_account = drift_client.get_user_account()
+    user = drift_client.get_user()
+    user_account = user.get_user_account()
+    oracle_price_data = drift_client.get_oracle_price_data_for_perp_market(_market_index)
 
-    positions = []
     in_pos = False
     size = 0
     entry_px = 0
     pnl_perc = 0
-    long = None
+    is_long = None
 
-    for position in user_state.positions:
-        if position.market.symbol == symbol:
-            positions.append(position)
-            in_pos = True
-            size = position.base_asset_amount
-            entry_px = position.entry_price
-            pnl_perc = position.unrealized_pnl_percentage * 100
-            long = position.base_asset_amount > 0
+    position = user.get_perp_position(_market_index)
+    entry_px = calculate_entry_price(position)
+    in_pos = True if position != None else False
+    market = drift_client.get_perp_market_account(_market_index)
+    #pnl_perc = calculate_position_pnl(market, position, oracle_price_data)
+    pnl_perc = user.get_unrealized_pnl(_market_index)
+    base_asset_amount = position.base_asset_amount if position is not None else 0
 
-    return positions, in_pos, size, symbol, entry_px, pnl_perc, long
+    is_long = base_asset_amount > 0
+    size = base_asset_amount
+    #is_short = base_asset_amount < 0
+
+    return position, in_pos, size, entry_px, pnl_perc, is_long
 
 async def cancel_all_orders(drift_client):
     orders = await drift_client.get_open_orders()
@@ -130,15 +153,16 @@ async def cancel_all_orders(drift_client):
         print(f"cancelling order {order}")
         await drift_client.cancel_order(order.order_id)
 
-async def kill_switch(drift_client, symbol):
+async def kill_switch(drift_client, market_index):
+    oracle_price_data = drift_client.get_oracle_price_data_for_perp_market(market_index)
     positions, im_in_pos, pos_size, pos_sym, entry_px, pnl_perc, long = await get_position(drift_client, symbol)
 
     while im_in_pos:
         await cancel_all_orders(drift_client)
 
-        orderbook = await drift_client.get_orderbook(symbol)
-        ask = orderbook.asks[0].price
-        bid = orderbook.bids[0].price
+        market = drift_client.get_perp_market_account(market_index)
+        bid = calculate_bid_price(market, oracle_price_data)
+        ask = calculate_ask_price(market, oracle_price_data)
 
         pos_size = abs(pos_size)
 
@@ -242,13 +266,15 @@ async def bot(drift_client):
         print('orders already set... chilling')
 
 async def main():
-    env = "mainnet"
+    env = "devnet"
     market_name = "SOL-PERP"
 
     keypath = os.environ.get("ANCHOR_WALLET")
     with open(os.path.expanduser(keypath), "r") as f:
         secret = json.load(f)
+
     kp = Keypair.from_bytes(bytes(secret))
+    #kp = load_keypair(f)  
     print("using public key:", kp.pubkey())
 
     wallet = Wallet(kp)
@@ -260,21 +286,19 @@ async def main():
         connection,
         wallet,
         str(env),
-        account_subscription=AccountSubscriptionConfig("polling"),
+        account_subscription=AccountSubscriptionConfig("demo"),
     )
 
-    await drift_client.add_user(10)
-
-    await bot(drift_client)
-    schedule.every(15).seconds.do(bot, drift_client)
+    await drift_client.initialize_user()
 
     while True:
         try:
-            schedule.run_pending()
+            await bot(drift_client)
+            await asyncio.sleep(15)
         except Exception as e:
             print('+++++ maybe an internet problem.. code failed. sleeping 10')
             print(e)
-            time.sleep(10)
+            await asyncio.sleep(10)
 
 if __name__ == "__main__":
     import asyncio
