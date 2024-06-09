@@ -41,7 +41,6 @@ from driftpy.math.perp_position import (
     is_available
 )
 
-
 #to-do add leverage later
 symbol = 'SOL'
 timeframe = '1h'  # for sdz zone
@@ -102,7 +101,7 @@ def supply_demand_zones(symbol, timeframe, limit):
                 # and range is between row 0 and 1
 
 async def limit_order(drift_client, symbol, order_params):
-    order_ix = None
+    order_tx_ix = None
     if order_params.direction == PositionDirection.Long():
         #order_ix = drift_client.place_perp_order_ix(order_params)
         order_tx_sig = await drift_client.place_perp_order_ix(order_params)
@@ -146,7 +145,8 @@ async def get_position(drift_client, _market_index):
     return position, in_pos, size, entry_px, pnl_perc, is_long
 
 async def cancel_all_orders(drift_client):
-    orders = await drift_client.get_open_orders()
+    user = drift_client.get_user()
+    orders = await user.get_open_orders()
     print(orders)
     print('above are the open orders... need to cancel any...')
     for order in orders:
@@ -155,7 +155,7 @@ async def cancel_all_orders(drift_client):
 
 async def kill_switch(drift_client, market_index):
     oracle_price_data = drift_client.get_oracle_price_data_for_perp_market(market_index)
-    positions, im_in_pos, pos_size, pos_sym, entry_px, pnl_perc, long = await get_position(drift_client, symbol)
+    position, im_in_pos, pos_size, pos_sym, entry_px, pnl_perc, long = await get_position(drift_client, symbol)
 
     while im_in_pos:
         await cancel_all_orders(drift_client)
@@ -189,7 +189,7 @@ async def kill_switch(drift_client, market_index):
             print('kill switch - BUY TO CLOSE SUBMITTED ')
             time.sleep(7)
         
-        positions, im_in_pos, pos_size, pos_sym, entry_px, pnl_perc, long = await get_position(drift_client, symbol)
+        position, im_in_pos, pos_size, pos_sym, entry_px, pnl_perc, long = await get_position(drift_client, symbol)
 
     print('position successfully closed in kill switch')
 
