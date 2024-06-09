@@ -53,6 +53,20 @@ export const chakraTheme = extendTheme({
 
   config,
   components: {
+    Tabs: {
+      defaultProps: {
+        colorScheme: "orange",
+      },
+    },
+    Tab: {
+    defaultProps: {
+              _hover: {
+                color: "orange.500",
+                bg: "orange-rgba.500",
+              },
+            }
+        
+    },
     Button: {
       variants: {
         solid: (styleProps: StyleFunctionProps) => {

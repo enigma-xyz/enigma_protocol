@@ -1,17 +1,17 @@
+import DepositBox from "@/components/DepositBox";
 import HeaderNav from "@/components/HeaderNav";
 import { LineDivider } from "@/components/LineDivider";
 import SectionHeading from "@/components/SectionHeading";
 import {
   Box,
-  Divider,
   Flex,
   HStack,
   Heading,
   List,
   ListItem,
+  ResponsiveValue,
   Stack,
   Tab,
-  TabIndicator,
   TabList,
   TabPanel,
   TabPanels,
@@ -20,6 +20,7 @@ import {
 } from "@chakra-ui/react";
 
 export default function VaultPage() {
+  const walletBalance = 120;
   const tabBtnStyle = {
     fontSize: { xl: "24px", base: "16px", md: "22px" },
     border: { sm: "2px" },
@@ -45,6 +46,16 @@ export default function VaultPage() {
     w: { base: "full", sm: "auto" },
     flexShrink: { base: 0, sm: 1 },
     px: { lg: 6, base: 3, md: 4 },
+  };
+  const tabPanelStyle = {
+    px: 0,
+    display: "flex",
+    flexWrap: { base: "wrap", lg: "nowrap" } as ResponsiveValue<
+      "wrap" | "nowrap"
+    >,
+    w: "full",
+    gap: 10,
+    py: 8,
   };
   return (
     <>
@@ -108,14 +119,18 @@ export default function VaultPage() {
             </Text>
           </Stack>
         </HStack>
-        <Flex maxW={1200} mx={"auto"}>
+        <Flex mx={"auto"} w={"full"} maxW={"1300"}>
           <Tabs
+            display={"flex"}
+            flexDir={"column"}
+            // w={"full"}
             mx={"auto"}
             colorScheme="orange"
             variant={"solid-rounded"}
             px={3}
           >
             <TabList
+              maxW={"fit-content"}
               flexWrap={{ base: "wrap", sm: "nowrap" }}
               justifyContent={{ base: "center" }}
               gap={{ lg: 8, base: 4, sm: 6 }}
@@ -123,74 +138,81 @@ export default function VaultPage() {
               rounded={{ sm: "full", base: "md" }}
               borderColor={"gray.600"}
               pos={"relative"}
+              mx={"auto"}
+              mb={8}
             >
               <Tab {...tabBtnStyle}>Vault Performance</Tab>
               <Tab {...tabBtnStyle}>Your performance</Tab>
               <Tab {...tabBtnStyle}>Overview</Tab>
-              {/* <Box pos={"absolute"} h={"full"}>
-                <TabIndicator
-                  top={0}
-                  height="full"
-                  bg="orange.600"
-                  borderRadius="full"
-                  border={"2px"}
-                  borderColor={"orange-rgba.200"}
-                  zIndex={-1}
-                />
-              </Box> */}
             </TabList>
             <TabPanels>
-              <TabPanel px={0}>
-                <SectionHeading title="Performance Breakdown" />
-                <List as={Stack} gap={3}>
-                  <ListItem as={Flex} justify={"space-between"}>
-                    <Text
-                      as={"span"}
-                      color={"gray.400"}
-                      fontSize={{ base: "17px", md: "18px" }}
-                      textAlign={"left"}
-                      fontWeight={"bold"}
-                    >
-                      Total Earnings (All Time)
-                    </Text>
-                    <Text as={"span"} textAlign={"right"} fontWeight={"bold"}>
-                      $2,903,690.85
-                    </Text>
-                  </ListItem>
-                  <ListItem as={Flex} justify={"space-between"}>
-                    <Text
-                      as={"span"}
-                      color={"gray.400"}
-                      fontSize={{ base: "17px", md: "18px" }}
-                      textAlign={"left"}
-                      fontWeight={"bold"}
-                    >
-                      Cumulative Return
-                    </Text>
-                    <Text as={"span"} textAlign={"right"} fontWeight={"bold"}>
-                      40.65%
-                    </Text>
-                  </ListItem>
-                  <ListItem as={Flex} justify={"space-between"}>
-                    <Text
-                      as={"span"}
-                      color={"gray.400"}
-                      fontSize={{ base: "17px", md: "18px" }}
-                      textAlign={"left"}
-                      fontWeight={"bold"}
-                    >
-                      APY
-                    </Text>
-                    <Text as={"span"} textAlign={"right"} fontWeight={"bold"}>
-                      0.95%
-                    </Text>
-                  </ListItem>
-                </List>
-                <SectionHeading title="Cumulative Performance" />
-                <SectionHeading title="Vault Details" />
+              <TabPanel {...tabPanelStyle}>
+                <Box flex={1} minW={{ md: 500, lg: 600, base: 350 }}>
+                  <SectionHeading
+                    title="Performance Breakdown"
+                    containerStyleProps={{ mt: 0 }}
+                  />
+                  <List as={Stack} gap={3}>
+                    <ListItem as={HStack} justify={"space-between"}>
+                      <Text
+                        as={"span"}
+                        color={"gray.400"}
+                        fontSize={{ base: "17px", md: "18px" }}
+                        textAlign={"left"}
+                        fontWeight={"bold"}
+                      >
+                        Total Earnings (All Time)
+                      </Text>
+                      <Text as={"span"} textAlign={"right"} fontWeight={"bold"}>
+                        $2,903,690.85
+                      </Text>
+                    </ListItem>
+                    <ListItem as={HStack} justify={"space-between"}>
+                      <Text
+                        as={"span"}
+                        color={"gray.400"}
+                        fontSize={{ base: "17px", md: "18px" }}
+                        textAlign={"left"}
+                        fontWeight={"bold"}
+                      >
+                        Cumulative Return
+                      </Text>
+                      <Text as={"span"} textAlign={"right"} fontWeight={"bold"}>
+                        40.65%
+                      </Text>
+                    </ListItem>
+                    <ListItem as={HStack} justify={"space-between"}>
+                      <Text
+                        as={"span"}
+                        color={"gray.400"}
+                        fontSize={{ base: "17px", md: "18px" }}
+                        textAlign={"left"}
+                        fontWeight={"bold"}
+                      >
+                        APY
+                      </Text>
+                      <Text as={"span"} textAlign={"right"} fontWeight={"bold"}>
+                        0.95%
+                      </Text>
+                    </ListItem>
+                  </List>
+                  <SectionHeading title="Cumulative Performance" />
+                  <SectionHeading title="Vault Details" />
+                </Box>
+                <DepositBox walletBalance={walletBalance} />
               </TabPanel>
-              <TabPanel>hello stock</TabPanel>
-              <TabPanel>overview</TabPanel>
+              <TabPanel {...tabPanelStyle}>
+                <Box flex={1} minW={{ md: 500, lg: 600, base: 350 }}>
+                  hello stock
+                </Box>
+                <DepositBox walletBalance={walletBalance} />
+              </TabPanel>
+              <TabPanel {...tabPanelStyle}>
+                <Box flex={1} minW={{ md: 500, lg: 600, base: 350 }}>
+                  overview
+                </Box>
+                <DepositBox walletBalance={walletBalance} />
+              </TabPanel>
             </TabPanels>
           </Tabs>
         </Flex>
