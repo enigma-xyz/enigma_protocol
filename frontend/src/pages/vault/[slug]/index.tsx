@@ -1,7 +1,9 @@
+import DataList from "@/components/DataList";
 import DepositOrWithdrawalBox from "@/components/DepositOrWithdrawalBox";
 import HeaderNav from "@/components/HeaderNav";
 import { LineDivider } from "@/components/LineDivider";
 import SectionHeading from "@/components/SectionHeading";
+import VaultChart from "@/components/VaultChart";
 import {
   Box,
   Flex,
@@ -23,7 +25,7 @@ export default function VaultPage() {
   const walletBalance = 120;
   const walletToken = "USDC";
   const tabBtnStyle = {
-    fontSize: { xl: "24px", base: "16px", md: "22px" },
+    fontSize: { xl: "24px", base: "16px", md: "20px" },
     border: { sm: "2px" },
     borderColor: { sm: "transparent" },
     _hover: {
@@ -63,6 +65,27 @@ export default function VaultPage() {
     px: 0,
     minW: { sm: 450, md: 480, lg: 500, xl: 600, base: 320 },
   };
+  const vaultPerformanceData = {
+    " Total Earnings (All Time)": "  $2,903,690.85",
+    " Cumulative Return": "40.65%",
+    APY: "0.95%",
+    "Max Daily Drawdown": "-0.87%",
+    "30D Volume": "$250,698,411.18",
+  };
+
+  const yourPerformanceData = {
+    "Total Earnings (All Time)": "$0.00",
+    "Your Cumulative Net Deposits": "$1.15",
+    "Your Balance": "$1.14",
+    ROI: "0.0000%",
+    "Vault Share": "0%",
+    "Max Daily Drawdown": "0.00%",
+  };
+  const yourFeesBreakdown = {
+    "Profit Share Fees Paid": "$0.00",
+    "High-Water Mark": "$1.15",
+  };
+  const yourTransactionHistory = { "Deposited 1.15 USDC": "08 Jun 2024" };
   return (
     <>
       <HeaderNav />
@@ -125,7 +148,13 @@ export default function VaultPage() {
             </Text>
           </Stack>
         </HStack>
-        <Flex mx={"auto"} w={"full"} maxW={"1300"}>
+        <Flex
+          mx={"auto"}
+          justify={"center"}
+          w={"full"}
+          maxW={"1300"}
+          px={{ lg: 8, md: 6, sm: 4 }}
+        >
           <Tabs
             display={"flex"}
             flexDir={"column"}
@@ -153,64 +182,144 @@ export default function VaultPage() {
             </TabList>
             <TabPanels {...tabPanelsContainerStyle}>
               <TabPanel {...tabPanelStyle}>
-                <Box flex={1}>
+                <Stack gap={5} flex={1}>
                   <SectionHeading
                     title="Performance Breakdown"
                     containerStyleProps={{ mt: 0 }}
                   />
-                  <List as={Stack} gap={3}>
-                    <ListItem as={HStack} justify={"space-between"}>
+                  <DataList data={vaultPerformanceData} />
+                  <Box>
+                    <SectionHeading title="Cumulative Performance" />
+                    <VaultChart />
+                  </Box>
+                  <SectionHeading title="Vault Details" />
+                </Stack>
+              </TabPanel>
+              <TabPanel {...tabPanelStyle}>
+                <Stack gap={5}></Stack>
+                <Box>
+                  <SectionHeading
+                    title="Summary"
+                    containerStyleProps={{ mt: 0 }}
+                  />
+                  <HStack
+                    my={6}
+                    divider={<LineDivider styleProps={{ w: "2px" }} />}
+                    justify={"space-around"}
+                  >
+                    <Stack fontSize={"18px"} textAlign={"center"}>
                       <Text
-                        as={"span"}
-                        color={"gray.400"}
-                        fontSize={{ base: "17px", md: "18px" }}
-                        textAlign={"left"}
-                        fontWeight={"bold"}
+                        as="span"
+                        fontSize={"20px"}
+                        fontFamily={"var(--font-comfortaa)"}
                       >
+                        $1.14
+                      </Text>
+                      <Text as="span" color={"gray.300"}>
+                        Your Balance
+                      </Text>
+                    </Stack>
+                    <Stack fontSize={"18px"} textAlign={"center"}>
+                      <Text
+                        as="span"
+                        fontSize={"20px"}
+                        fontFamily={"var(--font-comfortaa)"}
+                      >
+                        $0.00
+                      </Text>
+                      <Text as="span" color={"gray.300"}>
                         Total Earnings (All Time)
                       </Text>
-                      <Text as={"span"} textAlign={"right"} fontWeight={"bold"}>
-                        $2,903,690.85
-                      </Text>
-                    </ListItem>
-                    <ListItem as={HStack} justify={"space-between"}>
-                      <Text
-                        as={"span"}
-                        color={"gray.400"}
-                        fontSize={{ base: "17px", md: "18px" }}
-                        textAlign={"left"}
-                        fontWeight={"bold"}
-                      >
-                        Cumulative Return
-                      </Text>
-                      <Text as={"span"} textAlign={"right"} fontWeight={"bold"}>
-                        40.65%
-                      </Text>
-                    </ListItem>
-                    <ListItem as={HStack} justify={"space-between"}>
-                      <Text
-                        as={"span"}
-                        color={"gray.400"}
-                        fontSize={{ base: "17px", md: "18px" }}
-                        textAlign={"left"}
-                        fontWeight={"bold"}
-                      >
-                        APY
-                      </Text>
-                      <Text as={"span"} textAlign={"right"} fontWeight={"bold"}>
-                        0.95%
-                      </Text>
-                    </ListItem>
-                  </List>
-                  <SectionHeading title="Cumulative Performance" />
-                  <SectionHeading title="Vault Details" />
+                    </Stack>
+                  </HStack>
+                </Box>
+                <Box>
+                  <SectionHeading title="Performance Breakdown" />
+                  <DataList data={yourPerformanceData} />
+                </Box>
+                <Box>
+                  <SectionHeading title="Fees Breakdown" />
+                  <DataList data={yourFeesBreakdown} />
+                </Box>
+                <Box>
+                  <SectionHeading title="Transaction History" />
+                  <DataList data={yourTransactionHistory} />
                 </Box>
               </TabPanel>
               <TabPanel {...tabPanelStyle}>
-                <Box flex={1}>hello stock</Box>
-              </TabPanel>
-              <TabPanel {...tabPanelStyle}>
-                <Box flex={1}>overview</Box>
+                <Stack gap={6}>
+                  <Box>
+                    <SectionHeading
+                      title="Strategy"
+                      containerStyleProps={{ mt: 0 }}
+                    />
+                    <Stack gap={4}>
+                      <Text>
+                        Supercharger vault employs a delta-neutral market making
+                        and liquidity provision strategy, primarily on Drift
+                        perpetual swaps. The strategy edge is in advanced
+                        volatility and inventory management models and a
+                        superior on-chain infrastructure setup.
+                      </Text>
+                      <Text>
+                        <Text as={"strong"} fontWeight={700}>
+                          The strategy is built on a smart contract, meaning
+                          funds cannot be withdrawn by anyone but you.
+                        </Text>
+                      </Text>
+                    </Stack>
+                  </Box>
+                  <Box>
+                    <SectionHeading title="Risks" />
+                    <Stack gap={4}>
+                      <Text>
+                        <Text as={"strong"} fontWeight={700}>
+                          Volatility Risk:
+                        </Text>{" "}
+                        Supercharger vault is exposed to volatility risk because
+                        rapid and large price movements can impact its ability
+                        to buy or sell instrument at desired prices. High
+                        volatility can widen bid-ask spreads, reducing
+                        profitability for the vault.
+                      </Text>
+                      <Text>
+                        <Text as={"strong"} fontWeight={700}>
+                          Counterparty Risk:
+                        </Text>{" "}
+                        Supercharger vault faces counterparty risk when dealing
+                        with other market participants. If vault enters into
+                        trades with a counterparty and the counterparty fails to
+                        fulfill their obligations, such as failing to deliver
+                        securities or make payment, the market maker may suffer
+                        financial losses.
+                      </Text>
+                    </Stack>
+                  </Box>
+                  <Box>
+                    <SectionHeading title="Lock Up Period & Withdrawals" />
+                    <Stack gap={4}>
+                      <Text>
+                        Deposited funds are subject to a 7 days redemption
+                        period.
+                      </Text>
+                      <Text>
+                        Withdrawals can be requested at any time. Funds will be
+                        made available for withdrawal at the end of the
+                        redemption period.
+                      </Text>
+                    </Stack>
+                  </Box>
+                  <Box>
+                    <SectionHeading title="Fees" />
+                    <Stack gap={4}>
+                      <Text>A performance fee of 30% applies.</Text>
+                      <Text>
+                        For deposits over $250,000, contact us to learn more
+                        about our White Glove service.
+                      </Text>
+                    </Stack>
+                  </Box>
+                </Stack>
               </TabPanel>
               <TabPanel
                 flex={1}

@@ -30,9 +30,10 @@ export default function DepositOrWithdrawalBox({
 
   return (
     <Box
+      transition={"0.3s ease-out"}
       flex={1}
-      minW={{ base: 300, md: 400, lg: 450 }}
-      minH={400}
+      minW={{ base: 300, md: 400, lg: 400 }}
+      minH={380}
       border={"1px"}
       borderColor={"gray.600"}
       rounded={"xl"}
@@ -70,6 +71,8 @@ export default function DepositOrWithdrawalBox({
                     Withdrawals can be requested at any time and will be
                     available after 7 days. Profits will not be accrued during
                     the redemption period, while losses can still be incurred.
+                  </Text>
+                  <Text>
                     The maximum amount is after fees, while the final amount
                     received may differ from the amount requested.
                   </Text>
@@ -123,7 +126,7 @@ export const TradeTypeBox = ({
 
   return (
     <>
-      {description && <Box>{description}</Box>}
+      {description && <Stack mb={5}>{description}</Stack>}
       <Stack
         as="form"
         justifyContent={"space-between"}

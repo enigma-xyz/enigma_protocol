@@ -13,7 +13,7 @@ export default function SectionHeading({
 }) {
   return (
     <HStack
-      my={4}
+      my={5}
       pos={"relative"}
       pb={2}
       {...(!hideBorder && {
