@@ -12,6 +12,7 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { Link } from "@chakra-ui/next-js";
+import { LineDivider } from "../LineDivider";
 export default function VaultCard() {
   return (
     <LinkBox
@@ -22,7 +23,6 @@ export default function VaultCard() {
       maxW={{ base: 450, lg: 500 }}
       border={"1px"}
       borderColor={"gray.600"}
-      cursor={"pointer"}
       _hover={{
         borderColor: "orange.400",
       }}
@@ -37,7 +37,7 @@ export default function VaultCard() {
       </Box>
       <Box py={3} bg={"blackAlpha.600"} sx={{ backdropFilter: "blur(10px)" }}>
         <Heading textAlign={"center"} fontWeight={700}>
-          <LinkOverlay href="#">SuperCharger</LinkOverlay>
+          <LinkOverlay href="/vault/supercharge">SuperCharger</LinkOverlay>
         </Heading>
         <HStack
           mt={2}
@@ -60,17 +60,19 @@ export default function VaultCard() {
         <HStack
           sx={{
             ".link-box:hover &": {
-              translateY: "-30px",
+              translateY: "-10px",
             },
           }}
+          transform={"auto"}
           transition={"0.3s ease-out"}
           h={"80px"}
           justify={"space-around"}
-          my={3}
+          mb={2}
+          mt={4}
           borderY={"1px"}
           borderColor={"gray.300"}
           py={3}
-          divider={<Divider orientation="vertical" color={"red"} bg={"red"} />}
+          divider={<LineDivider styleProps={{ w: "2px" }} />}
         >
           <VStack>
             <Text as={"span"}>APY </Text>
@@ -111,7 +113,12 @@ export default function VaultCard() {
             transform={"auto"}
             translateY={"60px"}
           >
-            <Button w={"full"} as={Link} href={"#"} textDecor="none!important">
+            <Button
+              w={"full"}
+              as={Link}
+              href="/vault/supercharge"
+              textDecor="none!important"
+            >
               Open Vault
             </Button>
           </Box>

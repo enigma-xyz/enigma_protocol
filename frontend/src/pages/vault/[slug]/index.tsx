@@ -1,11 +1,14 @@
 import HeaderNav from "@/components/HeaderNav";
 import { LineDivider } from "@/components/LineDivider";
+import SectionHeading from "@/components/SectionHeading";
 import {
   Box,
   Divider,
   Flex,
   HStack,
   Heading,
+  List,
+  ListItem,
   Stack,
   Tab,
   TabIndicator,
@@ -18,7 +21,7 @@ import {
 
 export default function VaultPage() {
   const tabBtnStyle = {
-    fontSize: { lg: "24px", base: "16px", md: "22px" },
+    fontSize: { xl: "24px", base: "16px", md: "22px" },
     border: { sm: "2px" },
     borderColor: { sm: "transparent" },
     _hover: {
@@ -28,14 +31,14 @@ export default function VaultPage() {
     },
     rounded: { sm: "full", base: "md" },
     color: "gray.400",
+    fontWeight: 400,
     _selected: {
-      fontWeight: 600,
       color: "white",
-      bg: "orange-rgba.600",
+      bg: "orange.500",
       borderColor: "transparent",
       _hover: {
         borderColor: "transparent",
-        bg: "orange-rgba.600",
+        bg: "orange-rgba.500",
         color: "white",
       },
     },
@@ -59,8 +62,8 @@ export default function VaultPage() {
             SuperCharger
           </Heading>
           <Text fontSize={{ sm: "22px", base: "20px" }} color={"gray.300"}>
-            multiply your yields with delta-neutral market making strategies
-            focused on SOL
+            Multiply your yields with delta-neutral market making strategies
+            focused on SOL.
           </Text>
         </Box>
         <HStack
@@ -105,8 +108,13 @@ export default function VaultPage() {
             </Text>
           </Stack>
         </HStack>
-        <Flex justify={"center"} maxW={1200} mx={"auto"}>
-          <Tabs colorScheme="orange" variant={"solid-rounded"} px={3}>
+        <Flex maxW={1200} mx={"auto"}>
+          <Tabs
+            mx={"auto"}
+            colorScheme="orange"
+            variant={"solid-rounded"}
+            px={3}
+          >
             <TabList
               flexWrap={{ base: "wrap", sm: "nowrap" }}
               justifyContent={{ base: "center" }}
@@ -132,7 +140,55 @@ export default function VaultPage() {
               </Box> */}
             </TabList>
             <TabPanels>
-              <TabPanel>hello value</TabPanel>
+              <TabPanel px={0}>
+                <SectionHeading title="Performance Breakdown" />
+                <List as={Stack} gap={3}>
+                  <ListItem as={Flex} justify={"space-between"}>
+                    <Text
+                      as={"span"}
+                      color={"gray.400"}
+                      fontSize={{ base: "17px", md: "18px" }}
+                      textAlign={"left"}
+                      fontWeight={"bold"}
+                    >
+                      Total Earnings (All Time)
+                    </Text>
+                    <Text as={"span"} textAlign={"right"} fontWeight={"bold"}>
+                      $2,903,690.85
+                    </Text>
+                  </ListItem>
+                  <ListItem as={Flex} justify={"space-between"}>
+                    <Text
+                      as={"span"}
+                      color={"gray.400"}
+                      fontSize={{ base: "17px", md: "18px" }}
+                      textAlign={"left"}
+                      fontWeight={"bold"}
+                    >
+                      Cumulative Return
+                    </Text>
+                    <Text as={"span"} textAlign={"right"} fontWeight={"bold"}>
+                      40.65%
+                    </Text>
+                  </ListItem>
+                  <ListItem as={Flex} justify={"space-between"}>
+                    <Text
+                      as={"span"}
+                      color={"gray.400"}
+                      fontSize={{ base: "17px", md: "18px" }}
+                      textAlign={"left"}
+                      fontWeight={"bold"}
+                    >
+                      APY
+                    </Text>
+                    <Text as={"span"} textAlign={"right"} fontWeight={"bold"}>
+                      0.95%
+                    </Text>
+                  </ListItem>
+                </List>
+                <SectionHeading title="Cumulative Performance" />
+                <SectionHeading title="Vault Details" />
+              </TabPanel>
               <TabPanel>hello stock</TabPanel>
               <TabPanel>overview</TabPanel>
             </TabPanels>
