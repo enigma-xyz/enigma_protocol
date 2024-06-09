@@ -100,7 +100,7 @@ export function CustomRadioGroup({
       rounded={"full"}
       maxW={"max-content"}
       divider={
-        <LineDivider styleProps={{ h: "full", rounded: "none", w: "1px" }} />
+        <LineDivider styleProps={{ h: "40px", rounded: "none", w: "1px" }} />
       }
       {...group}
     >

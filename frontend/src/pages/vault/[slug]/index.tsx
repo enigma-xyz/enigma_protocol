@@ -1,4 +1,4 @@
-import DepositBox from "@/components/DepositBox";
+import DepositOrWithdrawalBox from "@/components/DepositOrWithdrawalBox";
 import HeaderNav from "@/components/HeaderNav";
 import { LineDivider } from "@/components/LineDivider";
 import SectionHeading from "@/components/SectionHeading";
@@ -21,6 +21,7 @@ import {
 
 export default function VaultPage() {
   const walletBalance = 120;
+  const walletToken = "USDC";
   const tabBtnStyle = {
     fontSize: { xl: "24px", base: "16px", md: "22px" },
     border: { sm: "2px" },
@@ -47,8 +48,8 @@ export default function VaultPage() {
     flexShrink: { base: 0, sm: 1 },
     px: { lg: 6, base: 3, md: 4 },
   };
-  const tabPanelStyle = {
-    px: 0,
+  const tabPanelsContainerStyle = {
+    px: 1,
     display: "flex",
     flexWrap: { base: "wrap", lg: "nowrap" } as ResponsiveValue<
       "wrap" | "nowrap"
@@ -56,6 +57,11 @@ export default function VaultPage() {
     w: "full",
     gap: 10,
     py: 8,
+  };
+  const tabPanelStyle = {
+    flex: 1,
+    px: 0,
+    minW: { sm: 450, md: 480, lg: 500, xl: 600, base: 320 },
   };
   return (
     <>
@@ -127,7 +133,7 @@ export default function VaultPage() {
             mx={"auto"}
             colorScheme="orange"
             variant={"solid-rounded"}
-            px={3}
+            px={{ base: 2, lg: 3 }}
           >
             <TabList
               maxW={"fit-content"}
@@ -145,9 +151,9 @@ export default function VaultPage() {
               <Tab {...tabBtnStyle}>Your performance</Tab>
               <Tab {...tabBtnStyle}>Overview</Tab>
             </TabList>
-            <TabPanels>
+            <TabPanels {...tabPanelsContainerStyle}>
               <TabPanel {...tabPanelStyle}>
-                <Box flex={1} minW={{ md: 500, lg: 600, base: 350 }}>
+                <Box flex={1}>
                   <SectionHeading
                     title="Performance Breakdown"
                     containerStyleProps={{ mt: 0 }}
@@ -199,19 +205,23 @@ export default function VaultPage() {
                   <SectionHeading title="Cumulative Performance" />
                   <SectionHeading title="Vault Details" />
                 </Box>
-                <DepositBox walletBalance={walletBalance} />
               </TabPanel>
               <TabPanel {...tabPanelStyle}>
-                <Box flex={1} minW={{ md: 500, lg: 600, base: 350 }}>
-                  hello stock
-                </Box>
-                <DepositBox walletBalance={walletBalance} />
+                <Box flex={1}>hello stock</Box>
               </TabPanel>
               <TabPanel {...tabPanelStyle}>
-                <Box flex={1} minW={{ md: 500, lg: 600, base: 350 }}>
-                  overview
-                </Box>
-                <DepositBox walletBalance={walletBalance} />
+                <Box flex={1}>overview</Box>
+              </TabPanel>
+              <TabPanel
+                flex={1}
+                px={0}
+                minW={{ md: 400, base: 300 }}
+                display={"block!important"}
+              >
+                <DepositOrWithdrawalBox
+                  walletToken={walletToken}
+                  walletBalance={walletBalance}
+                />
               </TabPanel>
             </TabPanels>
           </Tabs>
