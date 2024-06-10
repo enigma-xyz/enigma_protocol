@@ -101,7 +101,7 @@ def supply_demand_zones(symbol, timeframe, limit):
                 # and range is between row 0 and 1
 
 async def limit_order(drift_client, symbol, order_params):
-    order_tx_ix = None
+    order_tx_sig = None
     if order_params.direction == PositionDirection.Long():
         #order_ix = drift_client.place_perp_order_ix(order_params)
         order_tx_sig = await drift_client.place_perp_order_ix(order_params)

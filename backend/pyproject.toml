@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "trading-strategies"
+name = "backend"
 version = "0.1.0"
 description = ""
 authors = ["degencodebeast <degencodebeast@protonmail.com>"]
