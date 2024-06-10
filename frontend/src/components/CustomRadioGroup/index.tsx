@@ -44,37 +44,56 @@ function RadioCard(props: Record<string, any>) {
   );
 }
 
-export function CustomRadioGroup({
-  onChange,
-  initialValue = 0,
-  totalAmount = 0,
-}: {
+interface CustomRadioGroupProps {
   onChange?: (value: string) => void;
   initialValue?: number;
   totalAmount?: number;
-}) {
-  const [defaultSelectedValue, setDefaultSelectedValue] = useState("");
-  const options = useMemo(() => ["25", "50", "75", "100"], []);
+  options: string[];
+  getLabel?: (value: string) => string;
+  defaultValue?: string;
+}
 
-  function getMatchingPercentage() {
+export function CustomRadioGroup({
+  onChange,
+  defaultValue,
+  initialValue,
+  totalAmount,
+  options,
+  getLabel = (value) => value, // Default label function just returns the value
+}: CustomRadioGroupProps) {
+  const [defaultSelectedValue, setDefaultSelectedValue] = useState("");
+
+  const calculateMatchingPercentage = useCallback(() => {
+    if (initialValue === undefined || totalAmount === undefined) {
+      return "";
+    }
+
     if (totalAmount === 0 || initialValue === 0) {
       return "";
     }
 
-    const percents = options;
     const calculatedPercent = (initialValue / totalAmount) * 100;
 
-    const matchedPercent = percents.find(
-      (percent) =>
-        parseFloat(percent) === parseFloat(calculatedPercent.toFixed(0))
+    const matchedPercent = options.find(
+      (option) =>
+        parseFloat(option) === parseFloat(calculatedPercent.toFixed(0))
     );
 
     return matchedPercent || "";
-  }
+  }, [initialValue, totalAmount, options]);
+
+  useEffect(() => {
+    if (defaultValue !== "") {
+      setDefaultSelectedValue(defaultValue!);
+    }
+    if (initialValue !== undefined && totalAmount !== undefined) {
+      setDefaultSelectedValue(calculateMatchingPercentage());
+    }
+  }, [initialValue, calculateMatchingPercentage, totalAmount, defaultValue]);
 
   const { getRootProps, getRadioProps } = useRadioGroup({
     value: defaultSelectedValue,
-    name: "deposit-percent",
+    name: "custom-radio-group",
     defaultValue: defaultSelectedValue,
     onChange: (value) => {
       setDefaultSelectedValue(value);
@@ -84,14 +103,6 @@ export function CustomRadioGroup({
 
   const group = getRootProps();
 
-  const getMatchingPercentageCb = useCallback(getMatchingPercentage, [
-    initialValue,
-    totalAmount,
-    options,
-  ]);
-  useEffect(() => {
-    setDefaultSelectedValue(getMatchingPercentageCb());
-  }, [initialValue, getMatchingPercentageCb, defaultSelectedValue]);
   return (
     <HStack
       mt={2}
@@ -114,7 +125,7 @@ export function CustomRadioGroup({
             isLast={index === options.length - 1}
             {...radio}
           >
-            {value === "100" ? "MAX" : `${value}%`}
+            {getLabel(value)}
           </RadioCard>
         );
       })}

@@ -190,6 +190,7 @@ export default function VaultPage() {
                   <DataList data={vaultPerformanceData} />
                   <Box>
                     <SectionHeading title="Cumulative Performance" />
+
                     <VaultChart />
                   </Box>
                   <SectionHeading title="Vault Details" />
@@ -210,7 +211,8 @@ export default function VaultPage() {
                     <Stack fontSize={"18px"} textAlign={"center"}>
                       <Text
                         as="span"
-                        fontSize={"20px"}
+                        fontSize={{ base: "20px", md: "22px" }}
+                        fontWeight={700}
                         fontFamily={"var(--font-comfortaa)"}
                       >
                         $1.14
@@ -222,7 +224,8 @@ export default function VaultPage() {
                     <Stack fontSize={"18px"} textAlign={"center"}>
                       <Text
                         as="span"
-                        fontSize={"20px"}
+                        fontSize={{ base: "20px", md: "22px" }}
+                        fontWeight={700}
                         fontFamily={"var(--font-comfortaa)"}
                       >
                         $0.00

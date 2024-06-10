@@ -179,7 +179,7 @@ export const TradeTypeBox = ({
               <Text as={"span"}>{walletToken}</Text>
             </HStack>
           </FormControl>
-          <CustomRadioGroup
+          <CustomRadioGroup options={['25','50','75','100']} getLabel={(value:string)=>`${value==='100'?'MAX':value}`}
             onChange={handleRadioChange}
             initialValue={+formik.values.amount}
             totalAmount={walletBalance}

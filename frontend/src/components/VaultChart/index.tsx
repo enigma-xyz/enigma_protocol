@@ -1,3 +1,13 @@
+import {
+  Box,
+  Button,
+  HStack,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
+  Text,
+} from "@chakra-ui/react";
 import { format } from "date-fns";
 import { useEffect, useState } from "react";
 import {
@@ -9,9 +19,14 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-
+import { CustomRadioGroup } from "../CustomRadioGroup";
+import { BsChevronDown } from "react-icons/bs";
 export default function VaultChart() {
   const [isReady, setIsReady] = useState(false);
+  const [menuItem, setMenuItem] = useState({
+    value: "7",
+    label: "7 days",
+  });
   const formatDate = (date: string | Date) => {
     if (isNaN(new Date(date).getTime())) return "";
     return format(new Date(date), "dd/MM");
@@ -63,8 +78,46 @@ export default function VaultChart() {
       amt: 2100,
     },
   ];
+  const handleMenuItemClick = (value: string, label: string) => {
+    setMenuItem({ value, label });
+  };
   return (
-    <div>
+    <Box>
+      <HStack mb={5} justify="space-between">
+        <CustomRadioGroup
+          defaultValue="P&L"
+          options={["P&L", "Vault Balance"]}
+        />
+        <Menu>
+          <MenuButton
+            rightIcon={<BsChevronDown />}
+            as={Button}
+            variant={"outline"}
+          >
+            <Text>{menuItem?.label}</Text>
+          </MenuButton>
+          <MenuList>
+            <MenuItem
+              value={"7"}
+              onClick={() => handleMenuItemClick("7", "7 days")}
+            >
+              7 days
+            </MenuItem>
+            <MenuItem
+              value={"30"}
+              onClick={() => handleMenuItemClick("30", "30 days")}
+            >
+              30 days
+            </MenuItem>
+            <MenuItem
+              value={"all"}
+              onClick={() => handleMenuItemClick("all", "All time")}
+            >
+              All time
+            </MenuItem>
+          </MenuList>
+        </Menu>
+      </HStack>
       {isReady && (
         <ResponsiveContainer width={"100%"} height={350}>
           <AreaChart data={data} margin={{ top: 10, left: 0, bottom: 0 }}>
@@ -89,6 +142,6 @@ export default function VaultChart() {
           </AreaChart>
         </ResponsiveContainer>
       )}
-    </div>
+    </Box>
   );
 }
