@@ -11,6 +11,8 @@ import schedule
 import requests
 
 from anchorpy import Wallet
+from solana.rpc import commitment
+from driftpy.constants.config import configs
 from solders.keypair import Keypair # type: ignore
 from solders.pubkey import Pubkey # type: ignore
 from solana.rpc.async_api import AsyncClient
@@ -53,7 +55,7 @@ binance_symbol = symbol + '/USD'
 print(binance_symbol)
 
 def get_ohlcv(binance_symbol, timeframe='1h', limit=100):
-    coinbase = ccxt.coinbasepro()
+    coinbase = ccxt.coinbase()
     
     ohlcv = coinbase.fetch_ohlcv(binance_symbol, timeframe, limit)
     
@@ -245,8 +247,10 @@ async def bot(drift_client, market_name):
             market_type=market_type,
             direction=PositionDirection.Long(),
             market_index=market_index,
-            base_asset_amount=size,
+            base_asset_amount=int(size * BASE_PRECISION),
             price=buy2,
+            trigger_condition=OrderTriggerCondition.Above(),
+            post_only=PostOnlyParams.TryPostOnly(),
         )
         await limit_order(drift_client, buy_order_params)
 
@@ -254,8 +258,12 @@ async def bot(drift_client, market_name):
             order_type=OrderType.Limit(),
             market_type=market_type,
             direction=PositionDirection.Short(),
-            base_asset_amount=size,
+            market_index=market_index,
+            base_asset_amount=int(size * BASE_PRECISION),
             price=sell2,
+            trigger_condition=OrderTriggerCondition.Above(),
+            post_only=PostOnlyParams.TryPostOnly(),
+
         )
         await limit_order(drift_client, sell_order_params)
 
@@ -265,31 +273,66 @@ async def bot(drift_client, market_name):
     else:
         print('orders already set... chilling')
 
-async def main():
+async def main(
+):
     env = "devnet"
     market_name = "SOL-PERP"
-
     keypath = os.environ.get("ANCHOR_WALLET")
+    spread=0.01
+
     with open(os.path.expanduser(keypath), "r") as f:
         secret = json.load(f)
-
     kp = Keypair.from_bytes(bytes(secret))
     #kp = load_keypair(f)  
     print("using public key:", kp.pubkey())
-
+    config = configs[env]
     wallet = Wallet(kp)
 
-    url = "https://solana-api.projectserum.com"
+    if keypath is None:
+        if os.environ["ANCHOR_WALLET"] is None:
+            raise NotImplementedError("need to provide keypath or set ANCHOR_WALLET")
+        else:
+            keypath = os.environ["ANCHOR_WALLET"]
+
+    if env == "devnet":
+        url = "https://devnet.helius-rpc.com/?api-key=3a1ca16d-e181-4755-9fe7-eac27579b48c"
+    elif env == "mainnet":
+        url = "https://mainnet.helius-rpc.com/?api-key=3a1ca16d-e181-4755-9fe7-eac27579b48c"
+    else:
+        raise NotImplementedError("only devnet/mainnet env supported")
+
     connection = AsyncClient(url)
+    market_index = -1
+    for perp_market_config in config.perp_markets:
+        if perp_market_config.symbol == market_name:
+            market_index = perp_market_config.market_index
+    for spot_market_config in config.spot_markets:
+        if spot_market_config.symbol == market_name:
+            market_index = spot_market_config.market_index
+
+    #url = "https://solana-api.projectserum.com"
+    #dev_net_url = "https://devnet.helius-rpc.com/?api-key=3a1ca16d-e181-4755-9fe7-eac27579b48c"
+    #mainnet_url =  "https://mainnet.helius-rpc.com/?api-key=3a1ca16d-e181-4755-9fe7-eac27579b48c"
+    
+    if market_index == -1:
+        print("INVALID MARKET")
+        return
+    markets = [market_index]
+
+    is_perp = "PERP" in market_name.upper()
+    market_type = MarketType.Perp() if is_perp else MarketType.Spot()
 
     drift_client = DriftClient(
         connection,
         wallet,
         str(env),
-        account_subscription=AccountSubscriptionConfig("demo"),
+        account_subscription=AccountSubscriptionConfig("websocket"),
     )
 
     await drift_client.initialize_user()
+    
+    #await drift_client.add_user(10)
+    #await drift_client.subscribe()
 
     while True:
         try:
@@ -301,5 +344,9 @@ async def main():
             await asyncio.sleep(10)
 
 if __name__ == "__main__":
+
     import asyncio
     asyncio.run(main())
+
+
+    
