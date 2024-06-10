@@ -67,7 +67,7 @@ def get_ohlcv(binance_symbol, timeframe='1h', limit=100):
 
     return df
 
-def supply_demand_zones(symbol, timeframe, limit):
+def supply_demand_zones(timeframe, limit):
     '''
     We can now pass in a timeframe and limit to change supply/demand zone easily
 
@@ -100,7 +100,7 @@ def supply_demand_zones(symbol, timeframe, limit):
     return sd_df # this is a df where the zone is indicated per timeframe
                 # and range is between row 0 and 1
 
-async def limit_order(drift_client, symbol, order_params):
+async def limit_order(drift_client, order_params):
     order_tx_ix = None
     if order_params.direction == PositionDirection.Long():
         #order_ix = drift_client.place_perp_order_ix(order_params)
@@ -119,10 +119,7 @@ async def limit_order(drift_client, symbol, order_params):
     return order_tx_sig
 
 async def get_position(drift_client, _market_index):
-    #user_account = drift_client.get_user_account()
     user = drift_client.get_user()
-    user_account = user.get_user_account()
-    oracle_price_data = drift_client.get_oracle_price_data_for_perp_market(_market_index)
 
     in_pos = False
     size = 0
@@ -153,9 +150,9 @@ async def cancel_all_orders(drift_client):
         print(f"cancelling order {order}")
         await drift_client.cancel_order(order.order_id)
 
-async def kill_switch(drift_client, market_index):
+async def kill_switch(drift_client, market_index, market_type):
     oracle_price_data = drift_client.get_oracle_price_data_for_perp_market(market_index)
-    position, im_in_pos, pos_size, pos_sym, entry_px, pnl_perc, long = await get_position(drift_client, symbol)
+    position, im_in_pos, pos_size, entry_px, pnl_perc, long = await get_position(drift_client, market_index)
 
     while im_in_pos:
         await cancel_all_orders(drift_client)
@@ -169,45 +166,45 @@ async def kill_switch(drift_client, market_index):
         if long:
             order_params = OrderParams(
                 order_type=OrderType.Limit(),
-                market_type=MarketType.Perp(),
+                market_type=market_type,
                 direction=PositionDirection.Short(),
                 base_asset_amount=pos_size,
                 price=ask,
             )
-            await limit_order(drift_client, symbol, order_params)
+            await limit_order(drift_client, market_index, order_params)
             print('kill switch - SELL TO CLOSE SUBMITTED ')
             time.sleep(7)
         else:
             order_params = OrderParams(
                 order_type=OrderType.Limit(),
-                market_type=MarketType.Perp(),
+                market_type=market_type,
                 direction=PositionDirection.Long(),
                 base_asset_amount=pos_size,
                 price=bid,
             )
-            await limit_order(drift_client, symbol, order_params)
+            await limit_order(drift_client, market_index, order_params)
             print('kill switch - BUY TO CLOSE SUBMITTED ')
             time.sleep(7)
         
-        position, im_in_pos, pos_size, pos_sym, entry_px, pnl_perc, long = await get_position(drift_client, symbol)
+        position, im_in_pos, pos_size, entry_px, pnl_perc, long = await get_position(drift_client, market_index)
 
     print('position successfully closed in kill switch')
 
-async def pnl_close(drift_client, symbol):
+async def pnl_close(drift_client, market_index):
     print('entering pnl close')
-    positions, im_in_pos, pos_size, pos_sym, entry_px, pnl_perc, long = await get_position(drift_client, symbol)
+    position, im_in_pos, pos_size, entry_px, pnl_perc, long = await get_position(drift_client, market_index)
     if pnl_perc > target:
         print(f'pnl gain is {pnl_perc} and target is {target}... closing position WIN')
-        await kill_switch(drift_client, pos_sym)
+        await kill_switch(drift_client, market_index)
     elif pnl_perc <= max_loss:
         print(f'pnl loss is {pnl_perc} and max loss is {max_loss}... closing position LOSS')
-        await kill_switch(drift_client, pos_sym)
+        await kill_switch(drift_client, market_index)
     else:
         print(f'pnl loss is {pnl_perc} and max loss is {max_loss} and target {target}... not closing position')
     print('finished with pnl close')
 
-async def bot(drift_client):
-    sdz = supply_demand_zones(symbol, timeframe, limit)
+async def bot(drift_client, market_name):
+    sdz = supply_demand_zones(timeframe, limit)
     print(sdz)
 
     sz_1hr = sdz['1h_sz']
@@ -224,9 +221,11 @@ async def bot(drift_client):
     sell1 = min(sz_1hr_0, sz_1hr_1)
     sell2 = (sz_1hr_0 + sz_1hr_1) / 2
 
-    positions, im_in_pos, pos_size, pos_sym, entry_px, pnl_perc, long = await get_position(drift_client, symbol)
+    position, im_in_pos, pos_size, entry_px, pnl_perc, long = await get_position(drift_client, market_index)
 
-    orders = await drift_client.get_open_orders()
+    market_index, market_type = drift_client.get_market_index_and_type(market_name)
+    drift_user = drift_client.get_user()
+    orders = drift_user.get_open_orders()
     open_order_prices = [order.price for order in orders]
     print(open_order_prices)
 
@@ -243,25 +242,26 @@ async def bot(drift_client):
 
         buy_order_params = OrderParams(
             order_type=OrderType.Limit(),
-            market_type=MarketType.Perp(),
+            market_type=market_type,
             direction=PositionDirection.Long(),
+            market_index=market_index,
             base_asset_amount=size,
             price=buy2,
         )
-        await limit_order(drift_client, symbol, buy_order_params)
+        await limit_order(drift_client, buy_order_params)
 
         sell_order_params = OrderParams(
             order_type=OrderType.Limit(),
-            market_type=MarketType.Perp(),
+            market_type=market_type,
             direction=PositionDirection.Short(),
             base_asset_amount=size,
             price=sell2,
         )
-        await limit_order(drift_client, symbol, sell_order_params)
+        await limit_order(drift_client, sell_order_params)
 
     elif im_in_pos:
         print('we are in position.. checking PNL loss')
-        await pnl_close(drift_client, symbol)
+        await pnl_close(drift_client, market_index)
     else:
         print('orders already set... chilling')
 
@@ -293,7 +293,7 @@ async def main():
 
     while True:
         try:
-            await bot(drift_client)
+            await bot(drift_client, market_name)
             await asyncio.sleep(15)
         except Exception as e:
             print('+++++ maybe an internet problem.. code failed. sleeping 10')
