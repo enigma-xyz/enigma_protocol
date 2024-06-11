@@ -4,7 +4,8 @@ Drift Protocol connection and Supply Demand Zone Algo
 import os
 import json
 import time
-import ccxt
+import traceback
+#import ccxt
 import pandas as pd
 import datetime
 import schedule
@@ -55,17 +56,31 @@ binance_symbol = symbol + '/USD'
 print(binance_symbol)
 
 def get_ohlcv(binance_symbol, timeframe='1h', limit=100):
-    coinbase = ccxt.coinbase()
+    # coinbase = ccxt.binance()
     
-    ohlcv = coinbase.fetch_ohlcv(binance_symbol, timeframe, limit)
+    # ohlcv = coinbase.fetch_ohlcv(binance_symbol, timeframe, limit)
+
+    # print(ohlcv)
     
-    df = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
-    df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
+    # df = pd.DataFrame(ohlcv, columns=['timestamp', 'open', 'high', 'low', 'close', 'volume'])
+    # df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
 
-    df = df.tail(limit)
+    # df = df.tail(limit)
 
-    df['support'] = df[:-2]['close'].min()
-    df['resis'] = df[:-2]['close'].max()    
+    # df['support'] = df[:-2]['close'].min()
+    # df['resis'] = df[:-2]['close'].max()  
+    # 
+
+    df = pd.DataFrame({
+    'timestamp': ['2024-06-10 01:00:00', '2024-06-10 02:00:00', '2024-06-10 03:00:00'],
+    'open': [160000.0, 161500.0, 162500.0],  # Adjusted open prices
+    'high': [161200.0, 162900.0, 163800.0],  # Adjusted high prices
+    'low': [159200.0, 161100.0, 162200.0],   # Adjusted low prices
+    'close': [160100.0, 161800.0, 162200.0],  # Adjusted close prices
+    'volume': [1000, 1200, 1100],
+    'support': [159800.0, 160200.0, 160700.0],  # Adjusted support level data
+    'resis': [160700.0, 161500.0, 163000.0]  # Adjusted resistance level data
+    })
 
     return df
 
@@ -106,10 +121,10 @@ async def limit_order(drift_client, order_params):
     order_tx_ix = None
     if order_params.direction == PositionDirection.Long():
         #order_ix = drift_client.place_perp_order_ix(order_params)
-        order_tx_sig = await drift_client.place_perp_order_ix(order_params)
+        order_tx_sig = await drift_client.place_perp_order(order_params)
     elif order_params.direction == PositionDirection.Short():
         #order_ix = drift_client.place_perp_order_ix(order_params)
-        order_tx_sig = await drift_client.place_perp_order_ix(order_params)
+        order_tx_sig = await drift_client.place_perp_order(order_params)
 
     #order_result = await drift_client.send_ixs(order_ix)
 
@@ -120,7 +135,7 @@ async def limit_order(drift_client, order_params):
 
     return order_tx_sig
 
-async def get_position(drift_client, _market_index):
+def get_position(drift_client, _market_index):
     user = drift_client.get_user()
 
     in_pos = False
@@ -130,22 +145,27 @@ async def get_position(drift_client, _market_index):
     is_long = None
 
     position = user.get_perp_position(_market_index)
-    entry_px = calculate_entry_price(position)
-    in_pos = True if position != None else False
-    market = drift_client.get_perp_market_account(_market_index)
-    #pnl_perc = calculate_position_pnl(market, position, oracle_price_data)
-    pnl_perc = user.get_unrealized_pnl(_market_index)
-    base_asset_amount = position.base_asset_amount if position is not None else 0
 
-    is_long = base_asset_amount > 0
-    size = base_asset_amount
-    #is_short = base_asset_amount < 0
+    if position == None:
+        print("No active positions")
+        return position, in_pos, size, entry_px, pnl_perc, is_long
+    else:  
+        entry_px = calculate_entry_price(position)
+        in_pos = True if position != None else False
+        market = drift_client.get_perp_market_account(_market_index)
+        #pnl_perc = calculate_position_pnl(market, position, oracle_price_data)
+        pnl_perc = user.get_unrealized_pnl(_market_index)
+        base_asset_amount = position.base_asset_amount if position is not None else 0
 
-    return position, in_pos, size, entry_px, pnl_perc, is_long
+        is_long = base_asset_amount > 0
+        size = base_asset_amount
+        #is_short = base_asset_amount < 0
+
+        return position, in_pos, size, entry_px, pnl_perc, is_long
 
 async def cancel_all_orders(drift_client):
     user = drift_client.get_user()
-    orders = await user.get_open_orders()
+    orders = await asyncio.to_thread(user.get_open_orders)
     print(orders)
     print('above are the open orders... need to cancel any...')
     for order in orders:
@@ -154,7 +174,7 @@ async def cancel_all_orders(drift_client):
 
 async def kill_switch(drift_client, market_index, market_type):
     oracle_price_data = drift_client.get_oracle_price_data_for_perp_market(market_index)
-    position, im_in_pos, pos_size, entry_px, pnl_perc, long = await get_position(drift_client, market_index)
+    position, im_in_pos, pos_size, entry_px, pnl_perc, long = get_position(drift_client, market_index)
 
     while im_in_pos:
         await cancel_all_orders(drift_client)
@@ -170,8 +190,11 @@ async def kill_switch(drift_client, market_index, market_type):
                 order_type=OrderType.Limit(),
                 market_type=market_type,
                 direction=PositionDirection.Short(),
-                base_asset_amount=pos_size,
-                price=ask,
+                market_index=market_index,
+                base_asset_amount=int(pos_size * BASE_PRECISION),
+                price=int(ask * PRICE_PRECISION),
+                trigger_condition=OrderTriggerCondition.Above(),
+                post_only=PostOnlyParams.TryPostOnly(),
             )
             await limit_order(drift_client, market_index, order_params)
             print('kill switch - SELL TO CLOSE SUBMITTED ')
@@ -181,20 +204,23 @@ async def kill_switch(drift_client, market_index, market_type):
                 order_type=OrderType.Limit(),
                 market_type=market_type,
                 direction=PositionDirection.Long(),
-                base_asset_amount=pos_size,
-                price=bid,
+                market_index=market_index,
+                base_asset_amount=int(pos_size * BASE_PRECISION),
+                price=int(bid * PRICE_PRECISION),
+                trigger_condition=OrderTriggerCondition.Above(),
+                post_only=PostOnlyParams.TryPostOnly(),
             )
             await limit_order(drift_client, market_index, order_params)
             print('kill switch - BUY TO CLOSE SUBMITTED ')
             time.sleep(7)
         
-        position, im_in_pos, pos_size, entry_px, pnl_perc, long = await get_position(drift_client, market_index)
+        position, im_in_pos, pos_size, entry_px, pnl_perc, long = get_position(drift_client, market_index)
 
     print('position successfully closed in kill switch')
 
 async def pnl_close(drift_client, market_index):
     print('entering pnl close')
-    position, im_in_pos, pos_size, entry_px, pnl_perc, long = await get_position(drift_client, market_index)
+    position, im_in_pos, pos_size, entry_px, pnl_perc, long = get_position(drift_client, market_index)
     if pnl_perc > target:
         print(f'pnl gain is {pnl_perc} and target is {target}... closing position WIN')
         await kill_switch(drift_client, market_index)
@@ -206,6 +232,7 @@ async def pnl_close(drift_client, market_index):
     print('finished with pnl close')
 
 async def bot(drift_client, market_name):
+    
     sdz = supply_demand_zones(timeframe, limit)
     print(sdz)
 
@@ -223,9 +250,12 @@ async def bot(drift_client, market_name):
     sell1 = min(sz_1hr_0, sz_1hr_1)
     sell2 = (sz_1hr_0 + sz_1hr_1) / 2
 
-    position, im_in_pos, pos_size, entry_px, pnl_perc, long = await get_position(drift_client, market_index)
-
     market_index, market_type = drift_client.get_market_index_and_type(market_name)
+    print(f"market index: {market_index} and market type: {market_type}.")
+    
+    position, im_in_pos, pos_size, entry_px, pnl_perc, long = get_position(drift_client, market_index)
+    
+    print("position:", position)
     drift_user = drift_client.get_user()
     orders = drift_user.get_open_orders()
     open_order_prices = [order.price for order in orders]
@@ -238,21 +268,23 @@ async def bot(drift_client, market_name):
         new_orders_needed = True
         print('no open orders')
 
-    if not im_in_pos and new_orders_needed:
+    #if not im_in_pos and new_orders_needed:
+    if new_orders_needed == True:
         print('not in position.. setting orders...')
         await cancel_all_orders(drift_client)
-
+        print("Canceling orders")
         buy_order_params = OrderParams(
             order_type=OrderType.Limit(),
             market_type=market_type,
             direction=PositionDirection.Long(),
             market_index=market_index,
             base_asset_amount=int(size * BASE_PRECISION),
-            price=buy2,
+            price=int(buy2 * PRICE_PRECISION),
             trigger_condition=OrderTriggerCondition.Above(),
             post_only=PostOnlyParams.TryPostOnly(),
         )
         await limit_order(drift_client, buy_order_params)
+        ("setting first limit order")
 
         sell_order_params = OrderParams(
             order_type=OrderType.Limit(),
@@ -260,15 +292,16 @@ async def bot(drift_client, market_name):
             direction=PositionDirection.Short(),
             market_index=market_index,
             base_asset_amount=int(size * BASE_PRECISION),
-            price=sell2,
+            price=int(sell2 * PRICE_PRECISION),
             trigger_condition=OrderTriggerCondition.Above(),
             post_only=PostOnlyParams.TryPostOnly(),
 
         )
         await limit_order(drift_client, sell_order_params)
+        ("setting second limit order")
 
     elif im_in_pos:
-        print('we are in position.. checking PNL loss')
+        print('we are in position.. checking PNL')
         await pnl_close(drift_client, market_index)
     else:
         print('orders already set... chilling')
@@ -279,6 +312,7 @@ async def main(
     market_name = "SOL-PERP"
     keypath = os.environ.get("ANCHOR_WALLET")
     spread=0.01
+    subaccount_id = 10
 
     with open(os.path.expanduser(keypath), "r") as f:
         secret = json.load(f)
@@ -329,10 +363,10 @@ async def main(
         account_subscription=AccountSubscriptionConfig("websocket"),
     )
 
-    await drift_client.initialize_user()
+    #await drift_client.initialize_user()
     
-    #await drift_client.add_user(10)
-    #await drift_client.subscribe()
+    await drift_client.add_user(subaccount_id)
+    await drift_client.subscribe()
 
     while True:
         try:
@@ -341,6 +375,7 @@ async def main(
         except Exception as e:
             print('+++++ maybe an internet problem.. code failed. sleeping 10')
             print(e)
+            traceback.print_exc()
             await asyncio.sleep(10)
 
 if __name__ == "__main__":
