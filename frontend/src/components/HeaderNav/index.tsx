@@ -1,4 +1,5 @@
 import { Button, HStack, Heading } from "@chakra-ui/react";
+import WalletConnectButton from "@/components/WalletConnectButton";
 import Link from "next/link";
 
 export default function HeaderNav() {
@@ -23,6 +24,7 @@ export default function HeaderNav() {
       >
         Connect Wallet
       </Button>
+      <WalletConnectButton />
     </HStack>
   );
 }

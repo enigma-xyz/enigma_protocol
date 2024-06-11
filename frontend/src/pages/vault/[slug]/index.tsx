@@ -4,13 +4,12 @@ import HeaderNav from "@/components/HeaderNav";
 import { LineDivider } from "@/components/LineDivider";
 import SectionHeading from "@/components/SectionHeading";
 import VaultChart from "@/components/VaultChart";
+import { useUserBalance } from "@/hooks";
 import {
   Box,
   Flex,
   HStack,
   Heading,
-  List,
-  ListItem,
   ResponsiveValue,
   Stack,
   Tab,
@@ -22,7 +21,10 @@ import {
 } from "@chakra-ui/react";
 
 export default function VaultPage() {
-  const walletBalance = 120;
+  const { balance } = useUserBalance();
+  console.log({ balance });
+
+  const walletBalance = 0;
   const walletToken = "USDC";
   const tabBtnStyle = {
     fontSize: { xl: "24px", base: "16px", md: "20px" },
