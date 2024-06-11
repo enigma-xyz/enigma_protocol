@@ -1,19 +1,17 @@
 import { useCustomSign, useWalletAccount } from "@/hooks";
 import { maskWalletAddress } from "@/utils";
-import { Button } from "@chakra-ui/react";
+import { Button, Menu, MenuButton, MenuItem, MenuList } from "@chakra-ui/react";
 import { useWallet } from "@solana/wallet-adapter-react";
-import r, {
-  WalletDisconnectButton,
-  WalletMultiButton,
-  useWalletModal,
-} from "@solana/wallet-adapter-react-ui";
+import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { useCallback, useEffect } from "react";
+import { BiSolidLogOut } from "react-icons/bi";
+import { BsChevronDown } from "react-icons/bs";
 
 export default function WalletConnectButton() {
-  const { connect, connected, connecting, disconnect, publicKey } = useWallet();
+  const { connected, disconnect, publicKey } = useWallet();
   const wm = useWalletModal();
   const { address } = useWalletAccount();
-  const { signCustomMessage, signed } = useCustomSign();
+  const { signCustomMessage, signed, setSigned } = useCustomSign();
   async function handleConnect() {
     try {
       wm.setVisible(true);
@@ -22,20 +20,19 @@ export default function WalletConnectButton() {
   async function handleDisconnect() {
     try {
       await disconnect();
+      setSigned(false);
     } catch (error) {}
   }
-  const signMessageCb = useCallback(signCustomMessage, [signCustomMessage]);
+  const signMessageCb = useCallback(async () => {
+    await signCustomMessage();
+  }, [signCustomMessage]);
   useEffect(() => {
     connected && !signed && signMessageCb();
-  }, [connected, signMessageCb, signed]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [connected, signed]);
   return (
     <>
-      {connected ? (
-        <Button onClick={async () => await handleDisconnect()}>
-          {" "}
-          disconnect
-        </Button>
-      ) : (
+      {!connected && (
         <Button
           fontWeight={600}
           size={{ md: "lg", base: "md" }}
@@ -45,7 +42,25 @@ export default function WalletConnectButton() {
           Connect Wallet
         </Button>
       )}
-      {connected && publicKey && <Button>{maskWalletAddress(address!)}</Button>}
+      {connected && publicKey && (
+        <Menu>
+          <MenuButton
+            rightIcon={<BsChevronDown />}
+            as={Button}
+            colorScheme="gray"
+          >
+            {maskWalletAddress(address!)}
+          </MenuButton>
+          <MenuList>
+            <MenuItem
+              icon={<BiSolidLogOut />}
+              onClick={async () => await handleDisconnect()}
+            >
+              disconnect
+            </MenuItem>
+          </MenuList>
+        </Menu>
+      )}
     </>
   );
 }

@@ -17,13 +17,6 @@ export default function HeaderNav() {
       </Heading>
       <nav></nav>
 
-      <Button
-        fontWeight={600}
-        size={{ md: "lg", base: "md" }}
-        variant={"outline"}
-      >
-        Connect Wallet
-      </Button>
       <WalletConnectButton />
     </HStack>
   );

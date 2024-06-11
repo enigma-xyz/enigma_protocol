@@ -4,7 +4,7 @@ import { type NextApiRequest, type NextApiResponse } from "next";
 
 const domain = "Enigma";
 const statement = "Please sign this message to confirm your identity.";
-const uri = "https://example.com";
+// const uri = "https://example.com";
 const expirationTime = new Date().getTime() + 3600 * 1000; // 1 hour later
 const notBefore = new Date().getTime();
 const nonce = Math.floor(Math.random() * 1000000);

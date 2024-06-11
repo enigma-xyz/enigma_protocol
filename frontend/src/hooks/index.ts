@@ -77,8 +77,11 @@ export function useCustomSign() {
     }
   };
   const signMessageCb = useCallback(signCustomMessage, [signCustomMessage]);
-  // useEffect(() => {
-  //   publicKey ? !signed && signMessageCb() : setSigned(false);
-  // }, [publicKey]);
+  useEffect(() => {
+    console.log({ signed });
+
+    publicKey ? !signed && signMessageCb() : setSigned(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [publicKey, signed]);
   return { signed, setSigned, signCustomMessage: signMessageCb };
 }
