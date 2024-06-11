@@ -1,48 +1,77 @@
-import { bot } from "./bot";
-import { rootMenu } from "./menus/rootMenu";
-import { handleStartCommand } from "./commands/startCommand";
-import { handleWelcomeMessage } from "./commands/welcomeCommand";
-import { handleBuyToken } from "./commands/buyCommand";
-import { handleSellCommand } from "./commands/sellCommand";
+import { Bot, Context, InlineKeyboard, session, SessionFlavor } from 'grammy';
 
-bot.use(rootMenu);
+// Define the session interface
+interface SessionData {
+  state: 'idle' | 'deposit' | 'withdraw';
+  amount: number;
+}
 
-bot.command("start", handleStartCommand);
-bot.command("sell", handleSellCommand);
+// Define the context type with session
+type MyContext = Context & SessionFlavor<SessionData>;
 
-bot.on("message:text", async (ctx) => {
-  if (ctx.session.currentStep === "awaitingName") {
-    await handleWelcomeMessage(ctx);
-  } else if (ctx.session.currentStep === "awaitingToken") {
-    await handleBuyToken(ctx);
+// Create a new bot instance
+const bot = new Bot<MyContext>('7004030153:AAEGPJAiA9PUASKXn7rQ2qtVY1uSytK9o-U');
+
+// Use session middleware
+bot.use(session({
+  initial: (): SessionData => ({
+    state: 'idle',
+    amount: 0,
+  }),
+}));
+// Handle the /start command
+bot.command('start', (ctx) => {
+  const keyboard = new InlineKeyboard()
+    .text('Deposit', 'deposit')
+    .text('Withdraw', 'withdraw')
+    .row()
+    .text('Summary of Trade', 'summary');
+
+  ctx.reply('Hello there! welcome to Enigma.\nPlease select an option:', {
+    reply_markup: keyboard,
+  });
+});
+
+// Handle the deposit button
+bot.callbackQuery('deposit', (ctx) => {
+  ctx.session.state = 'deposit';
+  ctx.reply('Please enter the deposit amount:');
+});
+
+// Handle the withdraw button
+bot.callbackQuery('withdraw', (ctx) => {
+  ctx.session.state = 'withdraw';
+  ctx.reply('Please enter the withdrawal amount:');
+});
+
+// Handle the summary button
+bot.callbackQuery('summary', (ctx) => {
+  ctx.reply(`Trade summary:\nAmount: ${ctx.session.amount}`);
+});
+
+// Handle the user's input based on the current state
+bot.on('message', (ctx) => {
+  const sanitizedText = ctx.msg.text?.replace(/,/g, '');
+  const amount = parseInt(sanitizedText || '0', 10);
+
+  if (ctx.session.state === 'deposit') {
+    if (amount > 0) {
+      ctx.session.amount += amount;
+      ctx.reply(`Deposit of ${amount} successful. Total balance: ${ctx.session.amount}`);
+    } else {
+      ctx.reply('Invalid deposit amount. Please enter a valid number.');
+    }
+    ctx.session.state = 'idle';
+  } else if (ctx.session.state === 'withdraw') {
+    if (amount > 0 && amount <= ctx.session.amount) {
+      ctx.session.amount -= amount;
+      ctx.reply(`Withdrawal of ${amount} successful. Remaining balance: ${ctx.session.amount}`);
+    } else {
+      ctx.reply(`Invalid withdrawal amount. Please enter a valid number within your balance.\nYour balance is ${ctx.session.amount}`);
+    }
+    ctx.session.state = 'idle';
   }
 });
 
+// Start the bot
 bot.start();
-
-
-
-// import { Bot } from "grammy";
-// import { Menu } from "@grammyjs/menu";
-
-// // Create a bot.
-// const bot = new Bot("6718845274:AAHmLDgK2Ef3zYWH3DAqlvSN9QLG7pbDYk8");
-
-// // Create a simple menu.
-// const menu = new Menu("time")
-//   .text(
-//     "What's the time?",
-//     (ctx) => ctx.editMessageText("It is " + new Date().toLocaleString()),
-//   );
-
-  
-
-// // Make it interactive.
-// bot.use(menu);
-
-// bot.command("start", async (ctx) => {
-//   // Send the menu.
-//   await ctx.reply("Check out this menu:", { reply_markup: menu });
-// });
-
-// bot.start();
