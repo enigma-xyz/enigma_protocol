@@ -12,6 +12,7 @@ import {
   TabPanels,
   Tabs,
   Text,
+  useToast,
 } from "@chakra-ui/react";
 import { useFormik } from "formik";
 import { ReactNode, useState } from "react";
@@ -97,6 +98,12 @@ export const TradeTypeBox = ({
   walletToken: string;
   type: "deposit" | "withdrawal";
 }) => {
+  const toast = useToast({
+    duration: 3000,
+    position: "top",
+    title: "Successful",
+    status: "success",
+  });
   const [isInputFocus, setIsInputFocus] = useState(false);
   const formik = useFormik({
     initialValues: {
@@ -104,11 +111,16 @@ export const TradeTypeBox = ({
     },
     onSubmit: (values) => {
       if (type === "deposit") {
-        alert("deposit");
+        toast({
+          status: "success",
+          title: "Deposited successfully",
+        });
       } else {
-        alert("withdrawal");
+        toast({
+          status: "success",
+          title: "Withdrawal request successful",
+        });
       }
-      alert(JSON.stringify(values, null, 2));
     },
   });
   const { values, handleChange, handleSubmit } = formik;
@@ -179,7 +191,9 @@ export const TradeTypeBox = ({
               <Text as={"span"}>{walletToken}</Text>
             </HStack>
           </FormControl>
-          <CustomRadioGroup options={['25','50','75','100']} getLabel={(value:string)=>`${value==='100'?'MAX':value}`}
+          <CustomRadioGroup
+            options={["25", "50", "75", "100"]}
+            getLabel={(value: string) => `${value === "100" ? "MAX" : value}`}
             onChange={handleRadioChange}
             initialValue={+formik.values.amount}
             totalAmount={walletBalance}
