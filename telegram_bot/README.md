@@ -1,4 +1,4 @@
-# escroguard-bot
+# enigma-bot
 compile code run
 npx tsc
 
