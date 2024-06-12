@@ -8,13 +8,13 @@ import { BiSolidLogOut } from "react-icons/bi";
 import { BsChevronDown } from "react-icons/bs";
 
 export default function WalletConnectButton() {
-  const { connected, disconnect, publicKey } = useWallet();
+  const { connected, disconnect, publicKey, connect } = useWallet();
   const wm = useWalletModal();
   const { address } = useWalletAccount();
   const { signCustomMessage, signed, setSigned } = useCustomSign();
   async function handleConnect() {
     try {
-      wm.setVisible(true);
+     wm.setVisible(true);
     } catch (error) {}
   }
   async function handleDisconnect() {
@@ -27,7 +27,7 @@ export default function WalletConnectButton() {
     await signCustomMessage();
   }, [signCustomMessage]);
   useEffect(() => {
-    connected && !signed && signMessageCb();
+    if (connected && !signed) signMessageCb();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [connected, signed]);
   return (

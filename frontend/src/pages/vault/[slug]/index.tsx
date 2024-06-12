@@ -4,7 +4,7 @@ import HeaderNav from "@/components/HeaderNav";
 import { LineDivider } from "@/components/LineDivider";
 import SectionHeading from "@/components/SectionHeading";
 import VaultChart from "@/components/VaultChart";
-import { useUserBalance } from "@/hooks";
+import { useCustomSign, useUserBalance } from "@/hooks";
 import {
   Box,
   Flex,
@@ -19,11 +19,27 @@ import {
   Tabs,
   Text,
 } from "@chakra-ui/react";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { useEffect, useState } from "react";
 
 export default function VaultPage() {
-  const { balance } = useUserBalance();
-  console.log({ balance });
+  // const { balance } = useUserBalance();
+  // console.log({ balance });
+  const { connection } = useConnection();
+  const { signed } = useCustomSign();
+  const { publicKey, connecting, connected } = useWallet();
 
+  const [balance, setBalance] = useState<number | null>(null);
+  console.log({ balance, signed, publicKey, connecting, connected });
+
+  useEffect(() => {
+    if (publicKey && signed) {
+      connection
+        .getBalance(publicKey, "max")
+        .then((balance) => setBalance(balance));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [publicKey]);
   const walletBalance = 0;
   const walletToken = "USDC";
   const tabBtnStyle = {

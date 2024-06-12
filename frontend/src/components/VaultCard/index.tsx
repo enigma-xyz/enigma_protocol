@@ -13,7 +13,22 @@ import {
 } from "@chakra-ui/react";
 import { Link } from "@chakra-ui/next-js";
 import { LineDivider } from "../LineDivider";
-export default function VaultCard() {
+
+export interface Vault {
+  name: string;
+  slug: string;
+  cover: string;
+  depositTokens?: Array<{ name?: string; image?: string }>;
+  tradingTokens?: Array<{ name?: string; image?: string }>;
+  apy: string;
+  tvl: string;
+  capacity: string;
+}
+
+interface VaultCardProps {
+  vault: Vault;
+}
+export default function VaultCard({ vault }: VaultCardProps) {
   return (
     <LinkBox
       display={"flex"}
@@ -31,13 +46,15 @@ export default function VaultCard() {
       overflow={"hidden"}
     >
       <Box minH={"150"} maxH={"250"}>
-        <LinkOverlay href="/vault/supercharge">
-          <Image src="/images/pattern.jpg" w={"full"} maxH={"full"} alt="" />
+        <LinkOverlay href={`/vault/${vault?.slug}`}>
+          <Image src={vault?.cover} w={"full"} maxH={"full"} alt="" />
         </LinkOverlay>
       </Box>
       <Box py={3} bg={"blackAlpha.600"} sx={{ backdropFilter: "blur(10px)" }}>
         <Heading textAlign={"center"} fontWeight={700}>
-          <LinkOverlay href="/vault/supercharge">SuperCharger</LinkOverlay>
+          <LinkOverlay href={`/vault/${vault?.slug}`}>
+            {vault?.name}
+          </LinkOverlay>
         </Heading>
         <HStack
           mt={2}
@@ -50,11 +67,37 @@ export default function VaultCard() {
             <Text as={"span"} fontWeight={600}>
               Deposit:
             </Text>
+            <HStack>
+              {vault?.depositTokens?.map((dToken) => {
+                return (
+                  <Image
+                    key={vault?.name + "-" + dToken?.name + "deposit"}
+                    src={dToken?.image}
+                    w={"20px"}
+                    h={"20px"}
+                    alt={dToken?.name + " logo"}
+                  />
+                );
+              })}
+            </HStack>
           </HStack>
           <HStack>
             <Text as={"span"} fontWeight={600}>
               Trading:
             </Text>
+            <HStack>
+              {vault?.tradingTokens?.map((tToken) => {
+                return (
+                  <Image
+                    key={vault?.name + "-" + tToken?.name + "trade"}
+                    src={tToken?.image}
+                    w={"20px"}
+                    h={"20px"}
+                    alt={tToken?.name + " logo"}
+                  />
+                );
+              })}
+            </HStack>
           </HStack>
         </HStack>
         <HStack
@@ -77,19 +120,19 @@ export default function VaultCard() {
           <VStack>
             <Text as={"span"}>APY </Text>
             <Text as={"span"} fontSize={"20px"} fontWeight={600}>
-              41.24%
+              {vault?.apy}
             </Text>
           </VStack>
           <VStack>
             <Text as={"span"}>TVL</Text>
             <Text as={"span"} fontSize={"20px"} fontWeight={600}>
-              $25.9M
+              {vault?.tvl}
             </Text>
           </VStack>
           <VStack>
             <Text as={"span"}>Capacity</Text>
             <Text as={"span"} fontSize={"20px"} fontWeight={600}>
-              86.48%
+              {vault?.capacity}
             </Text>
           </VStack>
         </HStack>
@@ -116,7 +159,7 @@ export default function VaultCard() {
             <Button
               w={"full"}
               as={Link}
-              href="/vault/supercharge"
+              href={`/vault/${vault?.slug}`}
               textDecor="none!important"
             >
               Open Vault

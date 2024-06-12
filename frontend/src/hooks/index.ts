@@ -5,19 +5,19 @@ import { useCallback, useEffect, useState } from "react";
 
 export const useUserBalance = () => {
   const { connection } = useConnection();
+  // const { signed } = useCustomSign();
+  // const { publicKey, connecting } = useWallet();
 
-  const { publicKey, connecting } = useWallet();
+  // const [balance, setBalance] = useState<number | null>(null);
 
-  const [balance, setBalance] = useState<number | null>(null);
+  // useEffect(() => {
+  //   if (publicKey && signed) {
+  //     connection.getBalance(publicKey).then((balance) => setBalance(balance));
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [publicKey]);
 
-  useEffect(() => {
-    if (publicKey && !connecting) {
-      connection.getBalance(publicKey).then((balance) => setBalance(balance));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [publicKey]);
-
-  return { balance };
+  return { balance: 0 };
 };
 export const useWalletAccount = () => {
   const [_address, setAddress] = useState<string | null>(null);
@@ -39,7 +39,8 @@ export function useCustomSign() {
   const [signed, setSigned] = useState(false);
 
   const signCustomMessage = async () => {
-    if (!publicKey) return;
+    if (!publicKey ) return;
+    if(signed) return;
     const address = publicKey?.toBase58();
     const account = {
       address: address,
@@ -53,15 +54,17 @@ export function useCustomSign() {
     const encodedMessage = new TextEncoder().encode(message);
     const signedMessage = (await signMessage?.(encodedMessage)) as Uint8Array;
     const signature = base58.encode(signedMessage);
-    setSigned(true);
+    // setSigned(true);
     try {
-      await verifyMessage({
+      const response = await verifyMessage({
         message,
         signature,
         address: address as string,
       });
+      setSigned(response.verified);
     } catch (e) {
       console.log(e);
+      setSigned(false);
       return;
     }
     async function verifyMessage(options: {
@@ -73,7 +76,7 @@ export function useCustomSign() {
         "/api/verify",
         options
       );
-      setSigned(response.verified);
+      return response;
     }
   };
   const signMessageCb = useCallback(signCustomMessage, [signCustomMessage]);
@@ -82,6 +85,6 @@ export function useCustomSign() {
 
     publicKey ? !signed && signMessageCb() : setSigned(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [publicKey, signed]);
+  }, [signed, publicKey]);
   return { signed, setSigned, signCustomMessage: signMessageCb };
 }
