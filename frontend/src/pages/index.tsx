@@ -1,6 +1,6 @@
 import HeaderNav from "@/components/HeaderNav";
 import VaultCard, { Vault } from "@/components/VaultCard";
-import { Button, Flex, Stack } from "@chakra-ui/react";
+import { Box, Button, Flex, Heading, Stack, Text } from "@chakra-ui/react";
 import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
 
 export default function Home({
@@ -11,6 +11,24 @@ export default function Home({
     <>
       <HeaderNav />
       <main>
+        <Box
+          mx={"auto"}
+          py={8}
+          my={6}
+          textAlign={"center"}
+          maxW={1200}
+          bg={"gray.900"}
+        >
+          <Heading mb={3} size={"4xl"}>
+            Vaults
+          </Heading>
+          <Text fontSize={{ lg: "22px", base: "20px" }} maxW={1000} mx={"auto"}>
+            Boost your trading profits through delta-neutral market making and
+            liquidity provision strategies. These techniques allow you to earn
+            from bid-ask spreads while maintaining hedged, market-neutral
+            positions.{" "}
+          </Text>
+        </Box>
         <Flex gap={5} wrap={"wrap"} py={8} px={4} justify={"center"}>
           {vaults &&
             vaults.length > 0 &&
@@ -60,6 +78,9 @@ export const getServerSideProps = (ctx: GetServerSidePropsContext) => {
     {
       name: "Bonking Dragon",
       slug: "bonking-dragon",
+      mentions: {
+        bonk: "https://cdn.prod.website-files.com/6629bf6a5421f2bbaa5e6255/662ddf0cdaeba3a5741d424c_bonkhead2.svg",
+      },
       cover: "/images/pattern.jpg",
       depositTokens: [
         {

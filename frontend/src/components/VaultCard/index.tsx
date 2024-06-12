@@ -15,6 +15,9 @@ import { Link } from "@chakra-ui/next-js";
 import { LineDivider } from "../LineDivider";
 
 export interface Vault {
+  mentions?: {
+    [key: string]: string;
+  };
   name: string;
   slug: string;
   cover: string;

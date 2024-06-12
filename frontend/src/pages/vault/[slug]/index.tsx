@@ -3,6 +3,7 @@ import DepositOrWithdrawalBox from "@/components/DepositOrWithdrawalBox";
 import HeaderNav from "@/components/HeaderNav";
 import { LineDivider } from "@/components/LineDivider";
 import SectionHeading from "@/components/SectionHeading";
+import { Vault } from "@/components/VaultCard";
 import VaultChart from "@/components/VaultChart";
 import { useCustomSign, useUserBalance } from "@/hooks";
 import {
@@ -10,6 +11,7 @@ import {
   Flex,
   HStack,
   Heading,
+  Image,
   ResponsiveValue,
   Stack,
   Tab,
@@ -20,15 +22,20 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
+import { Router, useRouter } from "next/router";
 import { useEffect, useState } from "react";
 
-export default function VaultPage() {
+export default function VaultPage({
+  vault,
+}: InferGetServerSidePropsType<typeof getServerSideProps>) {
   // const { balance } = useUserBalance();
   // console.log({ balance });
   const { connection } = useConnection();
   const { signed } = useCustomSign();
   const { publicKey, connecting, connected } = useWallet();
-
+  const router = useRouter();
+  if (!vault) router.reload();
   const [balance, setBalance] = useState<number | null>(null);
   console.log({ balance, signed, publicKey, connecting, connected });
 
@@ -108,16 +115,34 @@ export default function VaultPage() {
     <>
       <HeaderNav />
       <Box as="main" mx={"auto"} maxW={"1350"}>
+        {vault && vault?.slug === "bonking-dragon" && (
+          <HStack
+            maxW={1300}
+            justify={"flex-end"}
+            py={4}
+            px={{ lg: 6, base: 4 }}
+          >
+            {" "}
+            <Image
+              alt=""
+              src={vault?.mentions?.["bonk"]}
+              w={"45px"}
+              h={"45px"}
+            />
+          </HStack>
+        )}
         <Box
           textAlign={"center"}
           py={{ lg: 12, base: 8 }}
           px={4}
           mt={10}
-          bg={"#000b url('/images/pattern.jpg') center / cover no-repeat"}
+          bg={`#000b url(${
+            vault?.cover || "/images/pattern.jpg"
+          }) center / cover no-repeat`}
           backgroundBlendMode={"darken"}
         >
           <Heading size={{ sm: "3xl", base: "2xl" }} mb={4}>
-            SuperCharger
+            {vault?.name}
           </Heading>
           <Text fontSize={{ sm: "22px", base: "20px" }} color={"gray.300"}>
             Multiply your yields with delta-neutral market making strategies
@@ -360,3 +385,114 @@ export default function VaultPage() {
     </>
   );
 }
+
+export const getServerSideProps = (ctx: GetServerSidePropsContext) => {
+  const { slug } = ctx.query;
+  const vaults: Vault[] = [
+    {
+      name: "Drifting Tiger",
+      slug: "drifting-tiger",
+      cover: "/images/pattern.jpg",
+      depositTokens: [
+        {
+          name: "USDC",
+          image: "/icons/usdc.svg",
+        },
+      ],
+      tradingTokens: [
+        {
+          name: "BTC",
+          image: "/icons/btc.svg",
+        },
+        {
+          name: "SOL",
+          image: "/icons/sol.svg",
+        },
+        {
+          name: "WETH",
+          image: "/icons/weth.svg",
+        },
+        {
+          name: "JUP",
+          image: "/icons/jup.svg",
+        },
+      ],
+      apy: "41.24%",
+      tvl: "$25.9M",
+      capacity: "86.48%",
+    },
+    {
+      name: "Bonking Dragon",
+      slug: "bonking-dragon",
+      mentions: {
+        bonk: "https://cdn.prod.website-files.com/6629bf6a5421f2bbaa5e6255/662ddf0cdaeba3a5741d424c_bonkhead2.svg",
+      },
+      cover: "/images/pattern.jpg",
+      depositTokens: [
+        {
+          name: "USDC",
+          image: "/icons/usdc.svg",
+        },
+      ],
+      tradingTokens: [
+        {
+          name: "SOL",
+          image: "/icons/sol.svg",
+        },
+      ],
+      apy: "32.40%",
+      tvl: "$15.2M",
+      capacity: "73.21%",
+    },
+    {
+      name: "Double Boost",
+      slug: "double-boost",
+      cover: "/images/pattern.jpg",
+      depositTokens: [
+        {
+          name: "JITOSOL",
+          image: "/icons/jitosol.svg",
+        },
+      ],
+      tradingTokens: [
+        {
+          name: "JITOSOL",
+          image: "/icons/jitosol.svg",
+        },
+      ],
+      apy: "21.33%",
+      tvl: "$10.3M",
+      capacity: "46.53%",
+    },
+    {
+      name: "Perp Turbo",
+      slug: "perp-turbo",
+      cover: "/images/pattern.jpg",
+      depositTokens: [
+        {
+          name: "USDC",
+          image: "/icons/usdc.svg",
+        },
+      ],
+      tradingTokens: [
+        {
+          name: "WETH",
+          image: "/icons/weth.svg",
+        },
+        {
+          name: "BTC",
+          image: "/icons/btc.svg",
+        },
+      ],
+      apy: "51.23%",
+      tvl: "$35.4M",
+      capacity: "89.25%",
+    },
+  ];
+  const vault = vaults.find((v) => v.slug === (slug as string));
+  return {
+    props: {
+      vault,
+    },
+  };
+};
