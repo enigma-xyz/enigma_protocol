@@ -15,12 +15,13 @@ import {
   SolflareWalletAdapter,
 } from "@solana/wallet-adapter-wallets";
 import "@solana/wallet-adapter-react-ui/styles.css";
+import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 export default function App({ Component, pageProps }: AppProps) {
-  const network = clusterApiUrl("mainnet-beta");
-
+  const network = WalletAdapterNetwork.Devnet;
+  const endpoint = useMemo(() => clusterApiUrl(network), [network]);
   const wallets = useMemo(
-    () => [new PhantomWalletAdapter(), new SolflareWalletAdapter()],
-    []
+    () => [new PhantomWalletAdapter(), new SolflareWalletAdapter({ network })],
+    [network]
   );
 
   return (
@@ -34,7 +35,7 @@ export default function App({ Component, pageProps }: AppProps) {
         `}
       </style>
 
-      <ConnectionProvider endpoint={network}>
+      <ConnectionProvider endpoint={endpoint}>
         <WalletProvider wallets={wallets} autoConnect>
           <WalletModalProvider>
             <ChakraProvider theme={chakraTheme}>

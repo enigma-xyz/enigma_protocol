@@ -1,7 +1,7 @@
 import { useCustomSign, useWalletAccount } from "@/hooks";
 import { maskWalletAddress } from "@/utils";
 import { Button, Menu, MenuButton, MenuItem, MenuList } from "@chakra-ui/react";
-import { useWallet } from "@solana/wallet-adapter-react";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { useCallback, useEffect } from "react";
 import { BiSolidLogOut } from "react-icons/bi";
@@ -9,12 +9,15 @@ import { BsChevronDown } from "react-icons/bs";
 
 export default function WalletConnectButton() {
   const { connected, disconnect, publicKey, connect } = useWallet();
+  const { connection } = useConnection();
+
   const wm = useWalletModal();
   const { address } = useWalletAccount();
   const { signCustomMessage, signed, setSigned } = useCustomSign();
+
   async function handleConnect() {
     try {
-     wm.setVisible(true);
+      wm.setVisible(true);
     } catch (error) {}
   }
   async function handleDisconnect() {
@@ -23,13 +26,25 @@ export default function WalletConnectButton() {
       setSigned(false);
     } catch (error) {}
   }
-  const signMessageCb = useCallback(async () => {
-    await signCustomMessage();
-  }, [signCustomMessage]);
-  useEffect(() => {
-    if (connected && !signed) signMessageCb();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [connected, signed]);
+  // useEffect(() => {
+  //   const signMessageCb = async () => {
+  //     if (publicKey) {
+  //       if (!signed) {
+  //         await signCustomMessage();
+  //         await new Promise((resolve) => setTimeout(resolve, 2000));
+  //       }
+  //     } else {
+  //       setSigned(false);
+  //     }
+  //     if (signed) {
+  //       connection
+  //         .getBalance(publicKey!)
+  //         .then((balance) => console.log({ balance }));
+  //     }
+  //   };
+  //   signMessageCb();
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [publicKey, signed]);
   return (
     <>
       {!connected && (

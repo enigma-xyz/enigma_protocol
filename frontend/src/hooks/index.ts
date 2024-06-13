@@ -39,23 +39,23 @@ export function useCustomSign() {
   const [signed, setSigned] = useState(false);
 
   const signCustomMessage = async () => {
-    if (!publicKey ) return;
-    if(signed) return;
+    if (!publicKey) return;
+    if (signed) return;
     const address = publicKey?.toBase58();
     const account = {
       address: address,
     };
     // const message = "Sign to provide access to app";
-    const { message } = await apiPost<{ message: string }>(
-      "/api/request-message",
-      account
-    );
-
-    const encodedMessage = new TextEncoder().encode(message);
-    const signedMessage = (await signMessage?.(encodedMessage)) as Uint8Array;
-    const signature = base58.encode(signedMessage);
-    // setSigned(true);
     try {
+      const { message } = await apiPost<{ message: string }>(
+        "/api/request-message",
+        account
+      );
+
+      const encodedMessage = new TextEncoder().encode(message);
+      const signedMessage = (await signMessage?.(encodedMessage)) as Uint8Array;
+      setSigned(true);
+      const signature = base58.encode(signedMessage);
       const response = await verifyMessage({
         message,
         signature,
@@ -83,7 +83,7 @@ export function useCustomSign() {
   useEffect(() => {
     console.log({ signed });
 
-    publicKey ? !signed && signMessageCb() : setSigned(false);
+    setSigned(signed);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [signed, publicKey]);
   return { signed, setSigned, signCustomMessage: signMessageCb };
