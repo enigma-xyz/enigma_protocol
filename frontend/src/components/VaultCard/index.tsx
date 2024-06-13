@@ -13,20 +13,9 @@ import {
 } from "@chakra-ui/react";
 import { Link } from "@chakra-ui/next-js";
 import { LineDivider } from "../LineDivider";
+import { Vault } from "@/types";
 
-export interface Vault {
-  mentions?: {
-    [key: string]: string;
-  };
-  name: string;
-  slug: string;
-  cover: string;
-  depositTokens?: Array<{ name?: string; image?: string }>;
-  tradingTokens?: Array<{ name?: string; image?: string }>;
-  apy: string;
-  tvl: string;
-  capacity: string;
-}
+
 
 interface VaultCardProps {
   vault: Vault;

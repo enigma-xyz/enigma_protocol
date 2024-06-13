@@ -2,10 +2,13 @@ import DataList from "@/components/DataList";
 import DepositOrWithdrawalBox from "@/components/DepositOrWithdrawalBox";
 import HeaderNav from "@/components/HeaderNav";
 import { LineDivider } from "@/components/LineDivider";
+import MarkdownRenderer from "@/components/MarkdownRenderer";
 import SectionHeading from "@/components/SectionHeading";
-import { Vault } from "@/components/VaultCard";
+
 import VaultChart from "@/components/VaultChart";
 import { useCustomSign, useUserBalance } from "@/hooks";
+import { vaults } from "@/lib/vaults";
+import { Vault } from "@/types";
 import {
   Box,
   Flex,
@@ -22,6 +25,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import axios from "axios";
 import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
 import { Router, useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -258,7 +262,7 @@ export default function VaultPage({
                         fontWeight={700}
                         fontFamily={"var(--font-comfortaa)"}
                       >
-                        $1.14
+                        $0.0
                       </Text>
                       <Text as="span" color={"gray.300"}>
                         Your Balance
@@ -299,7 +303,7 @@ export default function VaultPage({
                       title="Strategy"
                       containerStyleProps={{ mt: 0 }}
                     />
-                    <Stack gap={4}>
+                    {/* <Stack gap={4}>
                       <Text>
                         Supercharger vault employs a delta-neutral market making
                         and liquidity provision strategy, primarily on Drift
@@ -313,33 +317,12 @@ export default function VaultPage({
                           funds cannot be withdrawn by anyone but you.
                         </Text>
                       </Text>
-                    </Stack>
+                    </Stack> */}
+                    <MarkdownRenderer markdown={vault?.strategy as string} />
                   </Box>
                   <Box>
                     <SectionHeading title="Risks" />
-                    <Stack gap={4}>
-                      <Text>
-                        <Text as={"strong"} fontWeight={700}>
-                          Volatility Risk:
-                        </Text>{" "}
-                        Supercharger vault is exposed to volatility risk because
-                        rapid and large price movements can impact its ability
-                        to buy or sell instrument at desired prices. High
-                        volatility can widen bid-ask spreads, reducing
-                        profitability for the vault.
-                      </Text>
-                      <Text>
-                        <Text as={"strong"} fontWeight={700}>
-                          Counterparty Risk:
-                        </Text>{" "}
-                        Supercharger vault faces counterparty risk when dealing
-                        with other market participants. If vault enters into
-                        trades with a counterparty and the counterparty fails to
-                        fulfill their obligations, such as failing to deliver
-                        securities or make payment, the market maker may suffer
-                        financial losses.
-                      </Text>
-                    </Stack>
+                    <MarkdownRenderer markdown={vault?.risk as string} />
                   </Box>
                   <Box>
                     <SectionHeading title="Lock Up Period & Withdrawals" />
@@ -386,113 +369,13 @@ export default function VaultPage({
   );
 }
 
-export const getServerSideProps = (ctx: GetServerSidePropsContext) => {
+export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const { slug } = ctx.query;
-  const vaults: Vault[] = [
-    {
-      name: "Drifting Tiger",
-      slug: "drifting-tiger",
-      cover: "/images/pattern.jpg",
-      depositTokens: [
-        {
-          name: "USDC",
-          image: "/icons/usdc.svg",
-        },
-      ],
-      tradingTokens: [
-        {
-          name: "BTC",
-          image: "/icons/btc.svg",
-        },
-        {
-          name: "SOL",
-          image: "/icons/sol.svg",
-        },
-        {
-          name: "WETH",
-          image: "/icons/weth.svg",
-        },
-        {
-          name: "JUP",
-          image: "/icons/jup.svg",
-        },
-      ],
-      apy: "41.24%",
-      tvl: "$25.9M",
-      capacity: "86.48%",
-    },
-    {
-      name: "Bonking Dragon",
-      slug: "bonking-dragon",
-      mentions: {
-        bonk: "https://cdn.prod.website-files.com/6629bf6a5421f2bbaa5e6255/662ddf0cdaeba3a5741d424c_bonkhead2.svg",
-      },
-      cover: "/images/pattern.jpg",
-      depositTokens: [
-        {
-          name: "USDC",
-          image: "/icons/usdc.svg",
-        },
-      ],
-      tradingTokens: [
-        {
-          name: "SOL",
-          image: "/icons/sol.svg",
-        },
-      ],
-      apy: "32.40%",
-      tvl: "$15.2M",
-      capacity: "73.21%",
-    },
-    {
-      name: "Double Boost",
-      slug: "double-boost",
-      cover: "/images/pattern.jpg",
-      depositTokens: [
-        {
-          name: "JITOSOL",
-          image: "/icons/jitosol.svg",
-        },
-      ],
-      tradingTokens: [
-        {
-          name: "JITOSOL",
-          image: "/icons/jitosol.svg",
-        },
-      ],
-      apy: "21.33%",
-      tvl: "$10.3M",
-      capacity: "46.53%",
-    },
-    {
-      name: "Perp Turbo",
-      slug: "perp-turbo",
-      cover: "/images/pattern.jpg",
-      depositTokens: [
-        {
-          name: "USDC",
-          image: "/icons/usdc.svg",
-        },
-      ],
-      tradingTokens: [
-        {
-          name: "WETH",
-          image: "/icons/weth.svg",
-        },
-        {
-          name: "BTC",
-          image: "/icons/btc.svg",
-        },
-      ],
-      apy: "51.23%",
-      tvl: "$35.4M",
-      capacity: "89.25%",
-    },
-  ];
-  const vault = vaults.find((v) => v.slug === (slug as string));
+
+    const vault = vaults.find((v) => v.slug === (slug as string));
   return {
     props: {
       vault,
     },
   };
-};
+}
