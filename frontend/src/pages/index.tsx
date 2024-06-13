@@ -7,7 +7,6 @@ import { vaults } from "@/lib/vaults";
 export default function Home({
   vaults,
 }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  console.log(vaults);
   return (
     <>
       <HeaderNav />

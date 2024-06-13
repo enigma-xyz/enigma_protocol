@@ -149,8 +149,7 @@ export default function VaultPage({
             {vault?.name}
           </Heading>
           <Text fontSize={{ sm: "22px", base: "20px" }} color={"gray.300"}>
-            Multiply your yields with delta-neutral market making strategies
-            focused on SOL.
+            {vault?.intro}
           </Text>
         </Box>
         <HStack
@@ -372,7 +371,7 @@ export default function VaultPage({
 export async function getServerSideProps(ctx: GetServerSidePropsContext) {
   const { slug } = ctx.query;
 
-    const vault = vaults.find((v) => v.slug === (slug as string));
+  const vault = vaults.find((v) => v.slug === (slug as string));
   return {
     props: {
       vault,

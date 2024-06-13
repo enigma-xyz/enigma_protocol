@@ -15,8 +15,6 @@ import { Link } from "@chakra-ui/next-js";
 import { LineDivider } from "../LineDivider";
 import { Vault } from "@/types";
 
-
-
 interface VaultCardProps {
   vault: Vault;
 }
@@ -35,12 +33,33 @@ export default function VaultCard({ vault }: VaultCardProps) {
       }}
       id="vault"
       className="link-box"
+      bg={"black"}
       overflow={"hidden"}
     >
       <Box minH={"150"} maxH={"250"}>
         <LinkOverlay href={`/vault/${vault?.slug}`}>
           <Image src={vault?.cover} w={"full"} maxH={"full"} alt="" />
         </LinkOverlay>
+      </Box>
+      <Box
+        w={{ base: 120, lg: 160 }}
+        h={{ base: 120, lg: 160 }}
+        rounded={"lg"}
+        mx={"auto"}
+        pos={"relative"}
+        bg={"gray.800"}
+        mt={{ base: "-60px", lg: "-80px" }}
+        overflow={"hidden"}
+        border={"4px"}
+        borderColor={"blackAlpha.300"}
+      >
+        <Image
+          alt=""
+          src={vault?.avatar || "/images/pattern.jpg"}
+          objectFit={"cover"}
+          w={"full"}
+          h={"full"}
+        />
       </Box>
       <Box py={3} bg={"blackAlpha.600"} sx={{ backdropFilter: "blur(10px)" }}>
         <Heading textAlign={"center"} fontWeight={700}>
