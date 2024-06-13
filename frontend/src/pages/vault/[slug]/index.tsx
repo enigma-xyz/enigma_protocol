@@ -148,7 +148,12 @@ export default function VaultPage({
           <Heading size={{ sm: "3xl", base: "2xl" }} mb={4}>
             {vault?.name}
           </Heading>
-          <Text fontSize={{ sm: "22px", base: "20px" }} color={"gray.300"}>
+          <Text
+            fontSize={{ sm: "22px", base: "20px" }}
+            color={"gray.300"}
+            maxW={1000}
+            mx={"auto"}
+          >
             {vault?.intro}
           </Text>
         </Box>
