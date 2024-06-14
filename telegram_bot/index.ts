@@ -10,7 +10,9 @@ interface SessionData {
 type MyContext = Context & SessionFlavor<SessionData>;
 
 // Create a new bot instance
-const bot = new Bot<MyContext>('7004030153:AAEGPJAiA9PUASKXn7rQ2qtVY1uSytK9o-U');
+const bot = new Bot<MyContext>('7472517699:AAEZ3qylDC3TCJhozhrc6OWIe9XATYezxHA');
+
+console.log("starting server")
 
 // Use session middleware
 bot.use(session({

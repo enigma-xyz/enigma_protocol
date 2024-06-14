@@ -33,14 +33,21 @@ import numpy as np
 import backtesting 
 import pandas_ta as pd_ta 
 import pandas as pd 
-from backtesting.lib import crossover 
+from backtesting.lib import crossover, plot_heatmaps 
 
 class BBANDS_EMA_STRATEGY(backtesting.Strategy):
     timeperiod = 20 
     ema_period = 20 
+
     def init(self):
-        self.upper_band, self.middle_band, self.lower_band = self.I(pd_ta.bbands, self.data.Close, timeperiod=self.timeperiod, nbdevup=2, nbdevdn=2)
-        self.ema = self.I(pd_ta.ema, self.data.Close, timeperiod = self.timeperiod)
+        #self.upper_band, self.middle_band, self.lower_band = self.I(pd_ta.bbands, self.data.Close, timeperiod=self.timeperiod, nbdevup=2, nbdevdn=2)
+        close = pd.Series(self.data.Close)
+        bbands = pd_ta.bbands(close, length=self.timeperiod, std=2)
+        self.upper_band = bbands['BBU_' + str(self.timeperiod) + '_2.0']
+        self.middle_band = bbands['BBM_' + str(self.timeperiod) + '_2.0']
+        self.lower_band = bbands['BBL_' + str(self.timeperiod) + '_2.0']
+        #self.ema = self.I(pd_ta.ema, self.data.Close, timeperiod = self.timeperiod)
+        self.ema = pd_ta.ema(close, length=self.timeperiod)
 
     def next(self):# 5002862.9
         if crossover(self.data.Close, self.upper_band) or crossover(self.ema, self.data.Close):
@@ -50,14 +57,24 @@ class BBANDS_EMA_STRATEGY(backtesting.Strategy):
             self.sell(size=2)
             pass 
 
-data = pd.read_csv('/Users/tc/Dropbox/**HMV/*ATC/Weekly Code - ATC/ETH-USD-1h-2020-2-02T00:00.csv')
-data.columns = [column.capitalize() for column in data.columns]
+data = pd.read_csv('SOL-USD1h100.csv',  index_col='datetime', parse_dates=True)
+# data.columns = [column.capitalize() for column in data.columns]
 data = data.dropna()
+
+data = data.iloc[:, :5]
+
+# # Clean up the column names to capitalize the first letter of each word
+# data.columns = data.columns.str.title().str.title()
+
+# Ensure the DataFrame contains columns 'Open', 'High', 'Low', 'Close', 'Volume'
+data.columns = ['Open', 'High', 'Low', 'Close', 'Volume']
+
 
 bt = backtesting.Backtest(data, BBANDS_EMA_STRATEGY, cash=1000000, commission=.006)
 
+#stats = bt.run()
 stats = bt.optimize(maximize='Equity Final [$]', timeperiod=range(20, 60, 5))
 
 print(stats)
 
-bt.plot()
+#bt.plot()
