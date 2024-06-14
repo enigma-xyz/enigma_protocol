@@ -5,7 +5,7 @@ import logging
 import pandas as pd
 import pandas_ta as pd_ta
 from anchorpy import Wallet
-from solders.keypair import Keypair
+from solders.keypair import Keypair  # type: ignore
 from solana.rpc.async_api import AsyncClient
 from driftpy.types import (
     MarketType,
@@ -22,7 +22,7 @@ from driftpy.constants.config import configs
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-symbol = 'ETH-PERP'
+symbol = '1MBONK-PERP'
 timeperiod = 20
 ema_period = 20
 take_profit = 1.1

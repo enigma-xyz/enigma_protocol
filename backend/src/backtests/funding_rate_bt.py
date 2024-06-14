@@ -1,7 +1,6 @@
 '''
 this is the og funding script with long and short
 
-THE BEST BEAUTIFUL
 Start                     2023-08-04 16:50:51                        
 End                       2023-09-21 07:30:42
 Duration                     47 days 14:39:51
@@ -72,7 +71,7 @@ class FundingRateStrategy(Strategy):
             self.sell(sl=sl_price_short, tp=tp_price_short)
 
 
-data = pd.read_csv('new-funding.csv')
+data = pd.read_csv('funding_rates_data.csv')
 data['Datetime'] = pd.to_datetime(data['datetime'], format='%m-%d-%y %H:%M:%S')
 
 # Split the DataFrame based on the 'symbol' column and make a copy
@@ -107,3 +106,85 @@ stats, heatmap = bt.optimize(
 print(stats)
 print(heatmap.sort_values().iloc[-3:])
 bt.plot()
+
+
+
+
+
+
+
+
+
+
+# from backtesting import Backtest, Strategy
+# import pandas as pd
+# import numpy as np
+
+# class FundingRateStrategy(Strategy):
+#     funding_rate_threshold_long = -0.02
+#     funding_rate_threshold_short = 0.02
+#     stop_loss = 0.01
+#     take_profit = 0.03
+    
+#     def init(self):
+#         self.funding_rates = self.I(lambda: self.data.fundingRate, name='funding_rate')
+#         self.cumulative_funding_rate_long = self.I(lambda: self.data.cumulativeFundingRateLong, name='cumulative_funding_rate_long')
+#         self.cumulative_funding_rate_short = self.I(lambda: self.data.cumulativeFundingRateShort, name='cumulative_funding_rate_short')
+    
+#     def next(self):
+#         if not self.position:
+#             if self.funding_rates[-1] < self.funding_rate_threshold_long:
+#                 self.buy(sl=self.data.markPriceTwap[-1] * (1 - self.stop_loss), tp=self.data.markPriceTwap[-1] * (1 + self.take_profit))
+#             elif self.funding_rates[-1] > self.funding_rate_threshold_short:
+#                 self.sell(sl=self.data.markPriceTwap[-1] * (1 + self.stop_loss), tp=self.data.markPriceTwap[-1] * (1 - self.take_profit))
+#         else:
+#             if self.position.is_long:
+#                 if self.cumulative_funding_rate_long[-1] > 0:
+#                     self.position.close()
+#             elif self.position.is_short:
+#                 if self.cumulative_funding_rate_short[-1] < 0:
+#                     self.position.close()
+
+# data = pd.read_csv('data.csv', dtype={
+#     'ts': int,
+#     'markPriceTwap': float,
+#     'baseAssetAmountWithAmm': float,
+#     'fundingRate': float,
+#     'cumulativeFundingRateLong': float,
+#     'cumulativeFundingRateShort': float
+# })
+
+# # Convert 'ts' column to datetime
+# data['ts'] = pd.to_datetime(data['ts'], unit='s')
+# data.set_index('ts', inplace=True)
+
+# # Create a new DataFrame with the required columns
+# ohlcv_data = pd.DataFrame({
+#     'Open': data['markPriceTwap'],
+#     'High': data['markPriceTwap'],
+#     'Low': data['markPriceTwap'],
+#     'Close': data['markPriceTwap'],
+#     'Volume': data['baseAssetAmountWithAmm']
+# })
+
+# # Merge the new DataFrame with the original data
+# data = pd.concat([ohlcv_data, data], axis=1)
+
+# # Initialize and run the Backtest
+# bt = Backtest(data, FundingRateStrategy, cash=10000, commission=0.002, exclusive_orders=True)
+# stats = bt.run()
+# print(stats)
+
+# # Optimize strategy parameters
+# # stats_opt = bt.optimize(
+# #     funding_rate_threshold_long=np.arange(-0.05, 0, 0.01),
+# #     funding_rate_threshold_short=np.arange(0, 0.05, 0.01),
+# #     stop_loss=np.arange(0.005, 0.03, 0.005),
+# #     take_profit=np.arange(0.01, 0.06, 0.01),
+# #     maximize='Equity Final [$]',
+# #     constraint=lambda param: param.take_profit > param.stop_loss
+# # )
+
+# # print(stats_opt)
+
+# # bt.plot()
