@@ -13,7 +13,7 @@ import json
 import os
 from driftpy.constants.config import configs
 from driftpy.drift_client import DriftClient, AccountSubscriptionConfig
-from driftpy.accounts import get_user_stats_account_public_key, get_spot_market_account, get_user_account_public_key
+from driftpy.accounts import get_user_stats_account_public_key, get_perp_market_account, get_spot_market_account, get_user_account_public_key
 from spl.token.constants import TOKEN_PROGRAM_ID
 from spl.token.instructions import get_associated_token_address
 
@@ -57,9 +57,12 @@ async def main(keypath,
     vault_pubkey = Pubkey.find_program_address(
         [b"vault", bytes(char_number_array)], Pubkey.from_string(pid)
     )[0]
+
+    print(f"Vault pubkey: {vault_pubkey}")
     params = {
         'name': char_number_array,
-        '_market_index': 1,  # SOL spot market index
+        'spot_market_index': 1,  # SOL spot market index
+        'perp_market_index': 0,  # SOL perp market index
         'redeem_period': int(60 * 60 * 24 * 30),  # 30 days
         'max_tokens': int(1_000_000 * 1e6),
         'min_deposit_amount': int(100 * 1e6),
@@ -70,6 +73,11 @@ async def main(keypath,
     }
     # ch_signer = get_clearing_house_signer_public_key(drift_client.program_id)
     spot_market = await get_spot_market_account(
+        drift_client.program, params['spot_market_index']
+    )
+
+      # ch_signer = get_clearing_house_signer_public_key(drift_client.program_id)
+    perp_market = await get_perp_market_account(
         drift_client.program, params['spot_market_index']
     )
 
