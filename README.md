@@ -6,7 +6,7 @@ Pitch Deck - [Figma slides](https://www.figma.com/proto/diEzJsJcpkEzwZfWfRqULh/E
 
 ## ✨ Description
 
-[Enigma-Protocol](https://enigma-protocol.vercel.app/) is an algorithmic trading protocol for solana. It brings professional-grade quant finance trading algorithms and tools for Solana. It trades on most popular solana DEXes, but currently just on Drift protocol. We employed active yield vaults where users can pool in their USDC, BONK into the vault pools, and earn real yield from our algorithmic strategies which are connected to these vaults and running 24/7 under close monitoring.
+[Enigma-Protocol](https://enigma-protocol.vercel.app/) is an algorithmic trading protocol for solana. It brings professional-grade quant finance trading algorithms and tools to retail on Solana. It trades on most popular solana DEXes, but currently just on Drift protocol. We employed active yield vaults where users can pool in their USDC, BONK into the vault pools, and earn real yield from our algorithmic strategies which are connected to these vaults and running 24/7 under close monitoring.
 
 ## Inspiration
 97% of traders are not profitable, the market is so efficient that the only way you can be profitable is if you find your edge, that's why all the hedge funds and wall street employ quantitative methods so they can beat the market and they are so secretive about their alpha. We thought about coming up with our own edge with automation and coming up with quantitative methods to build strategies that would otherwise have been impossible to implement without automation to build out our edge and then allow retail to enjoy the profits from the institutional quantitative trading methods from our platform.
@@ -35,11 +35,11 @@ We wrote our bots then connected it to our Drift protocol based vaults that trad
 
 We created and deployed our different vaults on the Solana Devnet Chain.
 
-1. Drifting Tiger Vault - 
+1. Drifting Tiger Vault - HrAuKuC8KuhqRcdmUu3WhSrNFv4HaV6XtqCdashhVH1A
 
-2. Bonking Dragon - 
+2. Bonking Dragon - 5QAPFbeAHtgb8LkbDBMSyaAmwtQRufWceQLLaxdSse6M
 
-3. Double Boost -
+3. Double Boost - 4K1s2DtLXrYXVMYShDdLLWTLezpyTBKpTFz2DEpt8QkF
 
 ## Installation
 
