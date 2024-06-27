@@ -26,25 +26,15 @@ export default function WalletConnectButton() {
       setSigned(false);
     } catch (error) {}
   }
-  // useEffect(() => {
-  //   const signMessageCb = async () => {
-  //     if (publicKey) {
-  //       if (!signed) {
-  //         await signCustomMessage();
-  //         await new Promise((resolve) => setTimeout(resolve, 2000));
-  //       }
-  //     } else {
-  //       setSigned(false);
-  //     }
-  //     if (signed) {
-  //       connection
-  //         .getBalance(publicKey!)
-  //         .then((balance) => console.log({ balance }));
-  //     }
-  //   };
-  //   signMessageCb();
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [publicKey, signed]);
+  useEffect(() => {
+    const signMessageCb = async () => {
+      if (publicKey) {
+        await signCustomMessage();
+      }
+    };
+    signMessageCb();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [publicKey]);
   return (
     <>
       {!connected && (

@@ -44,6 +44,8 @@ export function useCustomSign() {
     const address = publicKey?.toBase58();
     const account = {
       address: address,
+      chain: "solana",
+      network: "devnet",
     };
     // const message = "Sign to provide access to app";
     try {
@@ -51,19 +53,19 @@ export function useCustomSign() {
         "/api/request-message",
         account
       );
-
       const encodedMessage = new TextEncoder().encode(message);
       const signedMessage = (await signMessage?.(encodedMessage)) as Uint8Array;
-      setSigned(true);
       const signature = base58.encode(signedMessage);
       const response = await verifyMessage({
         message,
         signature,
         address: address as string,
       });
-      setSigned(response.verified);
+      setSigned(true);
+      console.log({ response });
+
+      // setSigned(response.verified);
     } catch (e) {
-      console.log(e);
       setSigned(false);
       return;
     }

@@ -1,3 +1,4 @@
+import axios from "axios";
 import { mainHandler } from "@/utils";
 
 import { type NextApiRequest, type NextApiResponse } from "next";
@@ -28,21 +29,24 @@ export default async function handler(
   });
 }
 export async function POST(req: NextApiRequest, res: NextApiResponse) {
-  const { address } = req.body;
+  const { address, network, chain = "solana" } = req.body;
+  const API_URL =
+    process.env.NEXT_PUBLIC_AUTH_API_URL ||
+    "https://laughing-journey-6wvrvrgjwpp3xq7v-3800.app.github.dev";
   if (!address) throw new Error("No address provided");
   try {
-    const message = createAuthMessage(
-      address,
-      domain,
-      statement,
-      timeout,
-      expirationTime,
-      notBefore,
-      nonce
+    const response = await axios.post(
+      `${API_URL}/auth/web3/solana/request-message`,
+      {
+        address,
+        network,
+        chain,
+      }
     );
+    console.log({ d: response?.data });
 
-    res.status(200).json({ success: true, message: message });
-  } catch (error) {
+    res.status(200).json({ success: true, message: response?.data?.data });
+  } catch (error: any) {
     console.error("Error requesting message:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
