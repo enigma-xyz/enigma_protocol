@@ -1,4 +1,4 @@
-# Enigma Protocol
+# Enigma Protocol x Bonkathon
 
 Video Demo - [Demo video](https://www.loom.com/share/38af2c5c8a8e46c29e16e316099dcee1) <br />
 Live Link - [Enigma-Protocol dapp](https://enigma-protocol.vercel.app/) <br />
